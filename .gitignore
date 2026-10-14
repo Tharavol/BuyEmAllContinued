@@ -1,0 +1,17 @@
+# OS junk
+Thumbs.db
+desktop.ini
+
+# Editor/IDE
+.vscode/
+.idea/
+
+# Claude / AI tool scratch files
+.claude/
+CLAUDE.md
+*_artifact*
+scratch/
+
+# Packaging output
+.release/
+*.zip

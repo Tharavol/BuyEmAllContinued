@@ -1,0 +1,11 @@
+package-as: BuyEmAll
+
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
+
+ignore:
+  - .github
+  - CHANGELOG.md
+  - README.md
+  - ATTRIBUTION.md
