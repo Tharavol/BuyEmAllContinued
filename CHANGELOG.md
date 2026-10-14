@@ -2,7 +2,11 @@
 
 All notable changes to BuyEmAll Continued are documented in this file. Upstream history up to v4.1.0 is in [Changelog.txt](Changelog.txt).
 
-## [Unreleased]
+## [4.1.5] - 2026-10-14
+
+### Fixed
+- **Shift-clicking an item at a vendor no longer throws a Lua error on WoW 12.1.5** ([#1](https://github.com/Tharavol/BuyEmAllContinued/issues/1)). 12.1.5 no longer provides the global item functions BuyEmAll used to measure free bag space, so every shift-click failed with "attempt to call a nil value". They are replaced with their `C_Item` equivalents. Buying items priced in other items, which used the same functions, is fixed too.
+- If the game hasn't loaded an item's data yet, shift-click now does nothing that time instead of erroring. Clicking again works once the data has loaded.
 
 ### Changed
 - **Now maintained as BuyEmAll Continued.** The AddOns list shows the new name; the folder, `/buyemall` command and saved settings are unchanged, so existing installs upgrade in place. See [ATTRIBUTION.md](ATTRIBUTION.md).
