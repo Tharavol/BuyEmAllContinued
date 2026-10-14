@@ -12,5 +12,6 @@ if GetLocale() == "enUS" or GetLocale == 'enGB' then
 	FIT				= "You can fit",
 	AFFORD			= "You can afford",
 	AVAILABLE		= "Vendor has",
+	PURCHASE_STOPPED	= "BuyEmAll: purchase stopped with %d of %d not bought.",
 }
 end

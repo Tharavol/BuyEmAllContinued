@@ -82,19 +82,23 @@ end
 local BEAframe = CreateFrame("FRAME", "BEAFrame");
 BEAframe:Hide();
 BEAframe:RegisterEvent("ADDON_LOADED");
+BEAframe:RegisterEvent("MERCHANT_CLOSED");
 local function eventHandler(self, event, ...)
     local arg1, arg2, arg3, arg4, arg5 = ...;
     if (event == "ADDON_LOADED") and (arg1 == "BuyEmAll") then
 		BEAConfirmToggle = (BEAConfirmToggle == 0 and false or true);
+    elseif (event == "MERCHANT_CLOSED") then
+        BuyEmAll:StopPurchaseLoop();
     end
 end
 
 BEAframe:SetScript("OnEvent", eventHandler);
 
--- Makes sure the BuyEmAll frame goes away when you leave a vendor.
+-- Makes sure the BuyEmAll frame goes away, and any purchase in progress stops, when you leave a vendor.
 
 function BuyEmAll:MerchantFrame_OnHide(...)
     BuyEmAllFrame:Hide();
+    self:StopPurchaseLoop();
     return self.OrigMerchantFrame_OnHide(...);
 end
 
@@ -357,13 +361,36 @@ end
 
 local framePurchAmount, frameNumLoops, frameLeftover = 0, 0, 0; -- Have to use locals because the whole self bit doesn't work in this function. Fun fact, that still goes over my head. ;.;
 local frameItemIndex;
+local frameItemLinkID; -- "item:12345" part of the link being bought, to detect the vendor list changing mid-run.
+local frameTotal = 0;  -- Amount the current run was started with, for the stopped-early message.
 
 local PurchaseLoopFrame = CreateFrame("Frame");
+
+-- Returns the "item:12345" / "currency:123" part of a link, or nil.
+local function LinkID(link)
+    return link and strmatch(link, "|H(%a+:%d+)") or nil;
+end
+
+-- Stops a purchase run in progress, saying how much was left unbought if it was cut short.
+function BuyEmAll:StopPurchaseLoop()
+    PurchaseLoopFrame:SetScript("OnUpdate", nil);
+    local remaining = frameNumLoops * framePurchAmount + frameLeftover;
+    frameNumLoops, frameLeftover = 0, 0;
+    if (remaining > 0) then
+        print(format(L.PURCHASE_STOPPED or "BuyEmAll: purchase stopped with %d of %d not bought.", remaining, frameTotal));
+    end
+end
+
 function BuyEmAll:onUpdate(sinceLastUpdate)
     self.sinceLastUpdate = (self.sinceLastUpdate or 0) + sinceLastUpdate;
     if (self.sinceLastUpdate >= 0.5) then -- In seconds, this being half a second.
         if (frameNumLoops == 0) and (frameLeftover == 0) then
             PurchaseLoopFrame:SetScript("OnUpdate", nil); -- When purchasing is done, clear the script so it's not running constantly.
+            return
+        end
+        -- The vendor closed, or its list changed so this index is now a different item: stop rather than buy the wrong thing.
+        if (LinkID(GetMerchantItemLink(frameItemIndex)) ~= frameItemLinkID) then
+            BuyEmAll:StopPurchaseLoop();
             return
         end
         if (frameNumLoops == 0) and (frameLeftover ~= 0) then
@@ -411,6 +438,8 @@ function BuyEmAll:DoPurchase(amount)
         frameLeftover = leftover;
     end
     frameItemIndex = self.itemIndex;
+    frameItemLinkID = LinkID(self.itemLink);
+    frameTotal = amount;
 
     PurchaseLoopFrame:SetScript("OnUpdate", BuyEmAll.onUpdate);
 end
