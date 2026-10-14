@@ -1,3 +1,5 @@
+-- BuyEmAll.L is set by the client's locale file, if there is one; missing keys fall back to English (enUS.lua).
+BuyEmAll.L = setmetatable(BuyEmAll.L or {}, { __index = BuyEmAll.DefaultL });
 local L = BuyEmAll.L;
 
 -- These are used for the text on the Max and Stack buttons. See BuyEmAll.xml.
@@ -377,7 +379,7 @@ function BuyEmAll:StopPurchaseLoop()
     local remaining = frameNumLoops * framePurchAmount + frameLeftover;
     frameNumLoops, frameLeftover = 0, 0;
     if (remaining > 0) then
-        print(format(L.PURCHASE_STOPPED or "BuyEmAll: purchase stopped with %d of %d not bought.", remaining, frameTotal));
+        print(format(L.PURCHASE_STOPPED, remaining, frameTotal));
     end
 end
 

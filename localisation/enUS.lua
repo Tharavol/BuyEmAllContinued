@@ -1,7 +1,7 @@
+-- English strings, always loaded. Every other locale falls back to these for any key it doesn't
+-- translate, and clients with no locale file of their own (enGB, itIT, ...) use them as-is.
 
-
-if GetLocale() == "enUS" or GetLocale == 'enGB' then
-	BuyEmAll.L = {
+BuyEmAll.DefaultL = {
 	MAX 			= "Max",
 	STACK 			= "Stack",
 	CONFIRM 		= "Are you sure you want to buy\n %d × %s?",
@@ -14,4 +14,3 @@ if GetLocale() == "enUS" or GetLocale == 'enGB' then
 	AVAILABLE		= "Vendor has",
 	PURCHASE_STOPPED	= "BuyEmAll: purchase stopped with %d of %d not bought.",
 }
-end
