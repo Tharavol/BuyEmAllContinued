@@ -7,6 +7,7 @@ All notable changes to BuyEmAll Continued are documented in this file. Upstream 
 ### Fixed
 - **Large purchases now stop when you leave the vendor** ([#2](https://github.com/Tharavol/BuyEmAllContinued/issues/2)). A purchase bigger than one stack is bought one stack every half second, and closing the vendor didn't stop it, so opening another vendor within a few seconds could spend the rest of the run on whatever item sat in the same position there. The run now stops when the vendor closes, and before each stack it checks the vendor is still selling the same item. If a run stops early, chat says how many weren't bought.
 - **BuyEmAll now loads on game languages it has no translation for** ([#3](https://github.com/Tharavol/BuyEmAllContinued/issues/3)), such as Italian, instead of failing with "attempt to index local 'L' (a nil value)". It uses English there. Translated languages also fall back to English for any text not yet translated, such as the new purchase-stopped message.
+- **Items priced in two currencies no longer show a stray "0" as a third cost** ([#4](https://github.com/Tharavol/BuyEmAllContinued/issues/4)).
 
 ## [4.1.5] - 2026-10-14
 

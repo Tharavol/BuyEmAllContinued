@@ -510,7 +510,7 @@ function BuyEmAll:UpdateDisplay()
         if (self.AltCurrPrice[2] == nil) then BuyEmAllCurrencyAmt2:SetText() end
         BuyEmAllCurrencyAmt3:SetText(self.AltNumPurchases * (self.AltCurrPrice[3] or 0));
         BuyEmAllCurrency3:SetTexture(self.AltCurrTex[3]);
-        if (self.AltCurrPrice[2] == nil) then BuyEmAllCurrencyAmt3:SetText() end
+        if (self.AltCurrPrice[3] == nil) then BuyEmAllCurrencyAmt3:SetText() end
     end
 
     BuyEmAllText:SetText(self.split);
