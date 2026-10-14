@@ -9,7 +9,7 @@ All notable changes to BuyEmAll Continued are documented in this file. Upstream 
 - The repository now includes the MIT license text, credits, and this changelog.
 
 ### Internal
-- The TOC no longer carries the upstream CurseForge, WoWInterface and Wago project IDs, which belong to the original listings.
+- The TOC adds interface 120105 (12.1.5) and no longer carries the upstream CurseForge, WoWInterface and Wago project IDs, which belong to the original listings.
 - Releases are built by the BigWigs packager from version tags.
 
 ## [4.1.4] - 2026-01-24

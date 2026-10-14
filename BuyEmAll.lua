@@ -105,8 +105,12 @@ end
 
 function BuyEmAll:GetFreeBagSpace(itemID)
     local canFit = 0;
-    local itemType = GetItemFamily(itemID);
-    local stackSize = select(8, GetItemInfo(itemID));
+    -- Global item functions were removed in 12.1.5; use the C_Item namespace.
+    local itemType = C_Item.GetItemFamily(itemID) or 0;
+    local stackSize = C_Item.GetItemMaxStackSizeByID(itemID);
+    if (stackSize == nil) then
+        return 0, 1; -- Item data not cached yet.
+    end
 
     for currentBag = 0, 4 do
         local freeSpace, bagType = C_Container.GetContainerNumFreeSlots(currentBag);
@@ -264,7 +268,7 @@ function BuyEmAll:AltCurrencyHandling(itemIndex, frame)
             if (strmatch(altCurrLink, "currency")) then -- Item/Currency link check
                 self.AltCurrAfford[i] = floor(C_CurrencyInfo.GetCurrencyInfoFromLink(altCurrLink).quantity / self.AltCurrPrice[i]) * self.preset; -- Calculate how many can be purchased.
             else
-                self.AltCurrAfford[i] = floor((GetItemCount(tonumber(strmatch(altCurrLink, "item:(%d+):")), true)) / self.AltCurrPrice[i]) * self.preset; -- Calculate how many can be purchased.
+                self.AltCurrAfford[i] = floor((C_Item.GetItemCount(tonumber(strmatch(altCurrLink, "item:(%d+):")), true)) / self.AltCurrPrice[i]) * self.preset; -- Calculate how many can be purchased.
             end
         end
     self.afford = self.AltCurrAfford[1];

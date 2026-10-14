@@ -1,4 +1,4 @@
-## Interface: 120000, 120001
+## Interface: 120000, 120001, 120105
 ## Title: BuyEmAll Continued
 ## Author: Jordy141, Tharavol, Claude
 ## Notes: Replaces shift-click interface at vendors, making it easier to buy large amounts of items at once.
