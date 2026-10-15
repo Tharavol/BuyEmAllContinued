@@ -446,22 +446,22 @@ function BuyEmAll:DoPurchase(amount)
     PurchaseLoopFrame:SetScript("OnUpdate", BuyEmAll.onUpdate);
 end
 
--- Rounds the alternate currency purchase amount, if needed, to the next multiple of the preset stack.
+-- Items bought with alternate currencies come in bundles of self.preset (the vendor's stack count), and,
+-- like Blizzard's own stack split frame, only whole bundles are bought. Rounds up to a whole bundle,
+-- or down instead if rounding up would go past the maximum (which bag space need not make a whole bundle).
 
 function BuyEmAll:AltCurrRounding(purchase)
-    local singleCost = 0;
-    local amount = purchase;
-    for i = 1, self.NumAltCurrency do   -- Checks the alternate currencies used if any is used once.
-        if (self.AltCurrPrice[i] == 1) then
-            singleCost = 1;
-        end
+    local preset = self.preset or 1;
+    if (preset <= 1) or (purchase % preset == 0) then
+        return purchase;
     end
-    
-	if (singleCost and purchase % self.preset ~= 0) then    -- Checks if the previous result is true, if so, the purchase can't be less than the preset amount.
-		amount = purchase + (self.preset - (purchase % self.preset)); --round amount up to the next multiple of the preset stack.
+
+    local amount = purchase + (preset - (purchase % preset));
+    if (self.max ~= nil) and (amount > self.max) then
+        amount = max(purchase - (purchase % preset), preset);
     end
-    
-	return amount;
+
+    return amount;
 end
 
 -- Changes the money display to however much amount of the item will cost. If amount is not specified, it uses the current split value.
