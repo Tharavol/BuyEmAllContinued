@@ -649,10 +649,10 @@ end
 
 function BuyEmAll:Left_Click()
     if (self.AltCurrencyMode == false) then
-        self.split = self.split - 1;
+        self.split = max(self.split - 1, 1);
         self:UpdateDisplay();
     else
-        self.split = self.split - self.preset;
+        self.split = max(self.split - self.preset, self.preset);
         self:UpdateDisplay();
     end
 end
@@ -662,10 +662,10 @@ end
 
 function BuyEmAll:Right_Click()
     if (self.AltCurrencyMode == false) then
-        self.split = self.split + 1;
+        self.split = min(self.split + 1, self.max);
         self:UpdateDisplay();
     else
-        self.split = self.split + self.preset;
+        self.split = min(self.split + self.preset, self.max);
         self:UpdateDisplay();
     end
 end
