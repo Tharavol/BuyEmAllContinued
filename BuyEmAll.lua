@@ -294,6 +294,11 @@ function BuyEmAll:AltCurrencyHandling(itemIndex, frame)
         self.max = min(self.max, self.available * self.preset);
     end
 
+    -- Only whole bundles can be bought, and bag space need not be a whole number of them.
+    if (self.preset > 1) then
+        self.max = self.max - (self.max % self.preset);
+    end
+
     if (self.max == 0) then
         return
     elseif (self.max == 1) then
@@ -447,8 +452,8 @@ function BuyEmAll:DoPurchase(amount)
 end
 
 -- Items bought with alternate currencies come in bundles of self.preset (the vendor's stack count), and,
--- like Blizzard's own stack split frame, only whole bundles are bought. Rounds up to a whole bundle,
--- or down instead if rounding up would go past the maximum (which bag space need not make a whole bundle).
+-- like Blizzard's own stack split frame, only whole bundles are bought. Rounds up to a whole bundle;
+-- AltCurrencyHandling keeps self.max a whole number of bundles, so this can't go past it.
 
 function BuyEmAll:AltCurrRounding(purchase)
     local preset = self.preset or 1;
@@ -456,12 +461,7 @@ function BuyEmAll:AltCurrRounding(purchase)
         return purchase;
     end
 
-    local amount = purchase + (preset - (purchase % preset));
-    if (self.max ~= nil) and (amount > self.max) then
-        amount = max(purchase - (purchase % preset), preset);
-    end
-
-    return amount;
+    return purchase + (preset - (purchase % preset));
 end
 
 -- Changes the money display to however much amount of the item will cost. If amount is not specified, it uses the current split value.
