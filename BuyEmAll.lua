@@ -395,8 +395,13 @@ function BuyEmAll:onUpdate(sinceLastUpdate)
             PurchaseLoopFrame:SetScript("OnUpdate", nil); -- When purchasing is done, clear the script so it's not running constantly.
             return
         end
-        -- The vendor closed, or its list changed so this index is now a different item: stop rather than buy the wrong thing.
-        if (LinkID(GetMerchantItemLink(frameItemIndex)) ~= frameItemLinkID) then
+        -- No link may only mean its data isn't loaded yet, so give it a few seconds. Closing the vendor still stops the run at once.
+        local linkID = LinkID(GetMerchantItemLink(frameItemIndex));
+        if (linkID == nil) and (self.sinceLastUpdate < 5) then
+            return
+        end
+        -- The vendor's list changed so this index is now a different item: stop rather than buy the wrong thing.
+        if (linkID ~= frameItemLinkID) then
             BuyEmAll:StopPurchaseLoop();
             return
         end
@@ -448,6 +453,7 @@ function BuyEmAll:DoPurchase(amount)
     frameItemLinkID = LinkID(self.itemLink);
     frameTotal = amount;
 
+    PurchaseLoopFrame.sinceLastUpdate = 0;
     PurchaseLoopFrame:SetScript("OnUpdate", BuyEmAll.onUpdate);
 end
 
