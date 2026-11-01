@@ -9,6 +9,7 @@ All notable changes to BuyEmAll Continued are documented in this file. Upstream 
 - **BuyEmAll now loads on game languages it has no translation for** ([#3](https://github.com/Tharavol/BuyEmAllContinued/issues/3)), such as Italian, instead of failing with "attempt to index local 'L' (a nil value)". It uses English there. Translated languages also fall back to English for any text not yet translated, such as the new purchase-stopped message.
 - **Items priced in two currencies no longer show a stray "0" as a third cost** ([#4](https://github.com/Tharavol/BuyEmAllContinued/issues/4)).
 - **Bundles bought with currencies no longer go past what fits in your bags** ([#5](https://github.com/Tharavol/BuyEmAllContinued/issues/5), [#23](https://github.com/Tharavol/BuyEmAllContinued/issues/23)). Items sold in bundles for currencies (say, 5 per purchase) are bought in whole bundles, and an amount in between was always rounded up, even when the extra bundle wouldn't fit. The most you can choose is now the number of whole bundles that fit, so the Max button matches what gets bought, and the window doesn't open if not even one bundle fits.
+- **`/buyemall confirm` now stays off after a reload or relog** ([#22](https://github.com/Tharavol/BuyEmAllContinued/issues/22)). Turning off the large-purchase confirmation only lasted until the next login, when it came back on.
 
 ## [4.1.5] - 2026-10-14
 

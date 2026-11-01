@@ -88,7 +88,7 @@ BEAframe:RegisterEvent("MERCHANT_CLOSED");
 local function eventHandler(self, event, ...)
     local arg1, arg2, arg3, arg4, arg5 = ...;
     if (event == "ADDON_LOADED") and (arg1 == "BuyEmAll") then
-		BEAConfirmToggle = (BEAConfirmToggle == 0 and false or true);
+		BEAConfirmToggle = not (BEAConfirmToggle == false or BEAConfirmToggle == 0); -- On unless saved as off; older versions saved 0.
     elseif (event == "MERCHANT_CLOSED") then
         BuyEmAll:StopPurchaseLoop();
     end
