@@ -500,6 +500,26 @@ do
     check("Stack then adds a whole stack", b.split == 25, b.split)
     check("Stack is disabled at the most that fits", e.BuyEmAllStackButton:IsEnabled() == false, e.BuyEmAllStackButton:IsEnabled())
 
+    _, e, b = open(partialBag())
+    typeAmount(b, "10")
+    stack(e)
+    check("#28 a typed amount past the partial stack goes up to the next boundary", b.split == 25, b.split)
+
+    local wrong = {}
+    for partial = 0, 19 do
+        _, e, b = open(partialBag())
+        b.partialFit = partial
+        for split = 1, 100 do
+            b.split = split
+            b:SetStackClick()
+            local filled = (b.stackClick - partial) % 20 == 0
+            if b.stackClick <= split or b.stackClick - split > 20 or not filled then
+                wrong[#wrong + 1] = partial .. "/" .. split .. "->" .. b.stackClick
+            end
+        end
+    end
+    check("#28 Stack always goes up, by at most a stack, to where a stack is filled", #wrong == 0, table.concat(wrong, " "):sub(1, 80))
+
     _, e, b = open({ items = { altItem(1, 1, 5) }, stackSize = 20, freeSlots = 10 })
     stack(e)
     check("Bundles: Stack from one bundle gives one stack", b.split == 20, b.split)
@@ -628,16 +648,10 @@ do
     c:tick(4)
     note("DoPurchase of 300, bundle 3, stack 200 sends", c:quantities())
 
-    local _, e, b = open(partialBag())
-    b.max = 100
-    typeAmount(b, "10")
-    e.BuyEmAll:OnClick(e.BuyEmAllStackButton, "LeftButton")
-    note("Stack from a typed 10, with room for a partial stack of 5, gives", b.split)
-
     local cost = altItem(1, 1).costs[1]
     local capped = altItem(1, 1)
     capped.link = "|cff|Hcurrency:55:0|h[C]|h|r"
-    _, e, b = open({ items = { capped }, currencies = { [capped.link] = { quantity = 95, maxQuantity = 100 }, [cost.link] = { quantity = 1000, maxQuantity = 0 } } })
+    local _, _, b = open({ items = { capped }, currencies ={ [capped.link] = { quantity = 95, maxQuantity = 100 }, [cost.link] = { quantity = 1000, maxQuantity = 0 } } })
     note("Currency for a currency, holding 95 of a cap of 100: the most is", b.max)
 end
 

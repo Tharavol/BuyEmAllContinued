@@ -555,7 +555,7 @@ end
 -- Calculates the amount that the Stack button will enter.
 
 function BuyEmAll:SetStackClick()
-    local increase = (self.partialFit == 0 and self.stack or self.partialFit) - (self.split % self.stack);
+    local increase = (self.partialFit - self.split) % self.stack; -- The room to the next amount that fills a stack.
     self.stackClick = self.split + (increase == 0 and self.stack or increase);
 end
 

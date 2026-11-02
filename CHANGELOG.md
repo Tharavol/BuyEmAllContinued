@@ -4,6 +4,9 @@ All notable changes to BuyEmAll Continued are documented in this file. Upstream 
 
 ## [Unreleased]
 
+### Fixed
+- **The Stack button no longer lowers the amount** ([#28](https://github.com/Tharavol/BuyEmAllContinued/issues/28)). With a partial stack in your bags, typing an amount past the room left in that stack and clicking Stack could take the amount down. It now always goes up to the next amount that fills a stack.
+
 ### Internal
 - The repository now includes tests that run the addon against stand-in WoW APIs, with no game client ([#16](https://github.com/Tharavol/BuyEmAllContinued/issues/16)). They aren't part of the release archive.
 - Every push and pull request now runs luacheck, the tests and a packager dry run ([#14](https://github.com/Tharavol/BuyEmAllContinued/issues/14)).
