@@ -105,7 +105,7 @@ function BuyEmAll:MerchantFrame_OnHide(...)
 end
 
 function BuyEmAll:HasBagEquippedInSlot(slotID)
-    local inventorySlotId = GetInventorySlotInfo("Bag" .. (slotID - 1) .. "Slot");
+    local inventorySlotId = C_PaperDollInfo.GetInventorySlotInfo("Bag" .. (slotID - 1) .. "Slot");
     return GetInventoryItemID("player", inventorySlotId) ~= nil;
 end
 
@@ -157,7 +157,7 @@ function BuyEmAll:MerchantItemButton_OnModifiedClick(frame, button)
     if (MerchantFrame.selectedTab == 1)
             and (IsShiftKeyDown())
             and not (IsControlKeyDown())
-            and not ((C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItemByID(GetMerchantItemLink(self.itemIndex))) and (button == "RightButton"))
+            and not ((button == "RightButton") and (GetMerchantItemLink(self.itemIndex) ~= nil) and (C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItemByID(GetMerchantItemLink(self.itemIndex))))
             and not (ChatFrame1EditBox:HasFocus()) then
 
         -- Set up various data before showing the BuyEmAll frame.

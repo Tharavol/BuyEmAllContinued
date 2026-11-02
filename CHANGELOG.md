@@ -12,6 +12,7 @@ All notable changes to BuyEmAll Continued are documented in this file. Upstream 
 - **`/buyemall confirm` now stays off after a reload or relog** ([#22](https://github.com/Tharavol/BuyEmAllContinued/issues/22)). Turning off the large-purchase confirmation only lasted until the next login, when it came back on.
 - **Arrow keys can no longer take the amount out of range** ([#6](https://github.com/Tharavol/BuyEmAllContinued/issues/6)). Pressing them could take it to 0 or below, or past the maximum. They now stop at the same limits as the on-screen arrows.
 - **"You can fit" and the Max button now count the reagent bag for crafting reagents** ([#8](https://github.com/Tharavol/BuyEmAllContinued/issues/8)). Its free space was left out, so both came in too low when buying reagents.
+- **Shift-clicking no longer risks a Lua error with a profession bag equipped, or on vendor entries without an item link** ([#9](https://github.com/Tharavol/BuyEmAllContinued/issues/9)). The profession bag check used a global function Blizzard has deprecated, and the Azerite check was given an empty link.
 
 ## [4.1.5] - 2026-10-14
 
