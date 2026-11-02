@@ -2,7 +2,7 @@
 
 All notable changes to BuyEmAll Continued are documented in this file. Upstream history up to v4.1.0 is in [Changelog.txt](Changelog.txt).
 
-## [Unreleased]
+## [4.1.6] - 2026-11-01
 
 ### Fixed
 - **Large purchases now stop when you leave the vendor** ([#2](https://github.com/Tharavol/BuyEmAllContinued/issues/2)). A purchase bigger than one stack is bought one stack every half second, and closing the vendor didn't stop it, so opening another vendor within a few seconds could spend the rest of the run on whatever item sat in the same position there. The run now stops when the vendor closes, and before each stack it checks the vendor is still selling the same item, waiting a few seconds if the game hasn't loaded that item's data yet ([#24](https://github.com/Tharavol/BuyEmAllContinued/issues/24)). If a run stops early, chat says how many weren't bought.
@@ -15,6 +15,15 @@ All notable changes to BuyEmAll Continued are documented in this file. Upstream 
 - **Shift-clicking no longer risks a Lua error with a profession bag equipped, or on vendor entries without an item link** ([#9](https://github.com/Tharavol/BuyEmAllContinued/issues/9)). The profession bag check used a global function Blizzard has deprecated, and the Azerite check was given an empty link.
 - **Unique items are now recognised in every game language, including "Unique (N)" items** ([#7](https://github.com/Tharavol/BuyEmAllContinued/issues/7)). The check only matched the English word "Unique", so other languages weren't limited, and items with a higher limit were missed. The most you can choose is now what's left of the limit. Items you can't afford no longer count as buyable just because they're unique.
 - **Two small limit fixes** ([#10](https://github.com/Tharavol/BuyEmAllContinued/issues/10)). The "Vendor has" tooltip line now shows a stock of exactly 1, and right-clicking Stack on an item sold in bundles now stops at one bundle instead of going down to 1.
+
+### Known gaps
+These parts were only checked with stand-in WoW APIs, not in the game, because a suitable client, vendor item or bag wasn't available. Please report anything that misbehaves.
+- Game languages other than English: the fallback to English ([#3](https://github.com/Tharavol/BuyEmAllContinued/issues/3)) and unique-item recognition ([#7](https://github.com/Tharavol/BuyEmAllContinued/issues/7)).
+- Items priced in other currencies: the stray "0" cost ([#4](https://github.com/Tharavol/BuyEmAllContinued/issues/4)), the bundle limits ([#5](https://github.com/Tharavol/BuyEmAllContinued/issues/5), [#23](https://github.com/Tharavol/BuyEmAllContinued/issues/23)), and the arrow-key and Stack limits on bundles ([#6](https://github.com/Tharavol/BuyEmAllContinued/issues/6), [#10](https://github.com/Tharavol/BuyEmAllContinued/issues/10)).
+- Waiting for item data during a large purchase ([#24](https://github.com/Tharavol/BuyEmAllContinued/issues/24)), and buying a unique item through the window ([#7](https://github.com/Tharavol/BuyEmAllContinued/issues/7)).
+- Shift-clicking with a profession bag equipped or on a vendor entry without an item link ([#9](https://github.com/Tharavol/BuyEmAllContinued/issues/9)), and the "Vendor has" line at a stock of exactly 1 ([#10](https://github.com/Tharavol/BuyEmAllContinued/issues/10)).
+
+Two questions about how the game handles bundles are still open and scheduled for 4.1.7: what vendor stock counts on a bundled item ([#26](https://github.com/Tharavol/BuyEmAllContinued/issues/26)), and what happens when a large purchase sends a partial bundle ([#27](https://github.com/Tharavol/BuyEmAllContinued/issues/27)).
 
 ## [4.1.5] - 2026-10-14
 
