@@ -562,13 +562,9 @@ end
 
 function BuyEmAll:DeStackClick()
     local decrease = tonumber(BuyEmAllText:GetText());
-    if (decrease <= self.stack) then
-        self.split = 1;
-        self:UpdateDisplay();
-    else
-        self.split = decrease - self.stack;
-        self:UpdateDisplay();
-    end
+    local lowest = (self.AltCurrencyMode == true) and self.preset or 1;
+    self.split = max(decrease - self.stack, lowest);
+    self:UpdateDisplay();
 end
 
 
@@ -711,7 +707,7 @@ BuyEmAll.lines = {
             label = L.AVAILABLE,
             field = "available",
             Hide = function()
-                return BuyEmAll.available <= 1
+                return BuyEmAll.available < 0 -- -1 means unlimited stock.
             end
         },
     },
