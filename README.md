@@ -48,6 +48,8 @@ Please report bugs and requests on the [issue tracker](https://github.com/Tharav
 luajit tests/run_tests.lua
 ```
 
+Setup, in-game checks and the release routine are in [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md). Upstream history before this continuation is in [Changelog.txt](Changelog.txt).

@@ -11,3 +11,4 @@ ignore:
   - CHANGELOG.md
   - README.md
   - ATTRIBUTION.md
+  - CONTRIBUTING.md
