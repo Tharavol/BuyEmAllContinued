@@ -88,11 +88,7 @@ BEAframe:RegisterEvent("MERCHANT_CLOSED");
 local function eventHandler(self, event, ...)
     local arg1, arg2, arg3, arg4, arg5 = ...;
     if (event == "ADDON_LOADED") and (arg1 == "BuyEmAll") then
-		if (BEAConfirmToggle == nil) then
-			BEAConfirmToggle = true;
-		elseif (BEAConfirmToggle == 0) then
-			BEAConfirmToggle = false;
-		end
+		BEAConfirmToggle = not (BEAConfirmToggle == false or BEAConfirmToggle == 0); -- On unless saved as off; older versions saved 0.
     elseif (event == "MERCHANT_CLOSED") then
         BuyEmAll:StopPurchaseLoop();
     end
@@ -298,6 +294,11 @@ function BuyEmAll:AltCurrencyHandling(itemIndex, frame)
         self.max = min(self.max, self.available * self.preset);
     end
 
+    -- Only whole bundles can be bought, and bag space need not be a whole number of them.
+    if (self.preset > 1) then
+        self.max = self.max - (self.max % self.preset);
+    end
+
     if (self.max == 0) then
         return
     elseif (self.max == 1) then
@@ -394,8 +395,13 @@ function BuyEmAll:onUpdate(sinceLastUpdate)
             PurchaseLoopFrame:SetScript("OnUpdate", nil); -- When purchasing is done, clear the script so it's not running constantly.
             return
         end
-        -- The vendor closed, or its list changed so this index is now a different item: stop rather than buy the wrong thing.
-        if (LinkID(GetMerchantItemLink(frameItemIndex)) ~= frameItemLinkID) then
+        -- No link may only mean its data isn't loaded yet, so give it a few seconds. Closing the vendor still stops the run at once.
+        local linkID = LinkID(GetMerchantItemLink(frameItemIndex));
+        if (linkID == nil) and (self.sinceLastUpdate < 5) then
+            return
+        end
+        -- The vendor's list changed so this index is now a different item: stop rather than buy the wrong thing.
+        if (linkID ~= frameItemLinkID) then
             BuyEmAll:StopPurchaseLoop();
             return
         end
@@ -447,12 +453,13 @@ function BuyEmAll:DoPurchase(amount)
     frameItemLinkID = LinkID(self.itemLink);
     frameTotal = amount;
 
+    PurchaseLoopFrame.sinceLastUpdate = 0;
     PurchaseLoopFrame:SetScript("OnUpdate", BuyEmAll.onUpdate);
 end
 
 -- Items bought with alternate currencies come in bundles of self.preset (the vendor's stack count), and,
--- like Blizzard's own stack split frame, only whole bundles are bought. Rounds up to a whole bundle,
--- or down instead if rounding up would go past the maximum (which bag space need not make a whole bundle).
+-- like Blizzard's own stack split frame, only whole bundles are bought. Rounds up to a whole bundle;
+-- AltCurrencyHandling keeps self.max a whole number of bundles, so this can't go past it.
 
 function BuyEmAll:AltCurrRounding(purchase)
     local preset = self.preset or 1;
@@ -460,12 +467,7 @@ function BuyEmAll:AltCurrRounding(purchase)
         return purchase;
     end
 
-    local amount = purchase + (preset - (purchase % preset));
-    if (self.max ~= nil) and (amount > self.max) then
-        amount = max(purchase - (purchase % preset), preset);
-    end
-
-    return amount;
+    return purchase + (preset - (purchase % preset));
 end
 
 -- Changes the money display to however much amount of the item will cost. If amount is not specified, it uses the current split value.
@@ -647,10 +649,10 @@ end
 
 function BuyEmAll:Left_Click()
     if (self.AltCurrencyMode == false) then
-        self.split = self.split - 1;
+        self.split = max(self.split - 1, 1);
         self:UpdateDisplay();
     else
-        self.split = self.split - self.preset;
+        self.split = max(self.split - self.preset, self.preset);
         self:UpdateDisplay();
     end
 end
@@ -660,10 +662,10 @@ end
 
 function BuyEmAll:Right_Click()
     if (self.AltCurrencyMode == false) then
-        self.split = self.split + 1;
+        self.split = min(self.split + 1, self.max);
         self:UpdateDisplay();
     else
-        self.split = self.split + self.preset;
+        self.split = min(self.split + self.preset, self.max);
         self:UpdateDisplay();
     end
 end
