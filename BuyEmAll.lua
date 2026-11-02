@@ -64,19 +64,27 @@ function BuyEmAll:SlashHandler(message, editbox)
     end
 end
 
-function BuyEmAll:ItemIsUnique(itemIDOrLink)
-	if(string.find(itemIDOrLink, "|Hitem:") ~= nil) then
-        itemIDOrLink = tonumber(string.match(itemIDOrLink, "|Hitem:(%d+):"));
-	end
+-- The client's "Unique (%d)" string as a pattern that captures the number, in whatever language it's in.
+local UNIQUE_MULTIPLE_PATTERN = "^" .. string.gsub(string.gsub(ITEM_UNIQUE_MULTIPLE, "[%(%)%.%%%+%-%*%?%[%]%^%$]", "%%%0"), "%%%%d", "(%%d+)") .. "$";
 
-    local tooltip = C_TooltipInfo.GetItemByID(itemIDOrLink);
+-- How many more of an item can be bought if a Unique line limits it, or nil if none does. Never below 1, so a click
+-- at the limit still reaches the server and shows its error. This reads the tooltip because C_Item.GetItemUniquenessByID
+-- can't tell: in-game it's false for Hearthstone ("Unique") and true for "Unique-Equipped" items, which aren't limited.
+function BuyEmAll:UniqueAllowance(itemIDOrLink)
+    local itemID = tonumber(itemIDOrLink) or tonumber(strmatch(itemIDOrLink, "|Hitem:(%d+)"));
+    local tooltip = itemID and C_TooltipInfo.GetItemByID(itemID);
+    if not tooltip then
+        return nil;
+    end
+
     for _, line in ipairs(tooltip.lines) do
-        if(line.leftText == 'Unique') then
-            return true;
+        local limit = (line.leftText == ITEM_UNIQUE) and 1 or tonumber(strmatch(line.leftText or "", UNIQUE_MULTIPLE_PATTERN));
+        if limit then
+            return max(limit - C_Item.GetItemCount(itemID, true), 1);
         end
     end
-   
-    return false;
+
+    return nil;
 end
 
 -- Variable setup/check.
@@ -230,12 +238,15 @@ function BuyEmAll:MerchantItemButton_OnModifiedClick(frame, button)
         -- Modified to check for free items. Mostly for the PTR/Beta servers, but it shouldn't hurt to leave it in.
         -- Put after the alternate currency trigger to prevent issues. Always had it here, just adding the note.
 
-        if (self.itemID ~= nil and BuyEmAll:ItemIsUnique(self.itemLink)) then
-            self.afford = 1
-        elseif (self.price <= 0 or self.price == nil) then
+        if (self.price <= 0 or self.price == nil) then
             self.afford = self.fit;
         else
             self.afford = floor(GetMoney() / ceil(self.price / self.preset));
+        end
+
+        local uniqueAllowance = (self.itemID ~= nil) and self:UniqueAllowance(self.itemLink);
+        if (uniqueAllowance) then
+            self.afford = min(self.afford, uniqueAllowance);
         end
 
         self.max = min(self.fit, self.afford);
@@ -288,12 +299,15 @@ function BuyEmAll:AltCurrencyHandling(itemIndex, frame)
     self.afford = self.AltCurrAfford[1];
     end
 
-    if(self.itemID ~= nil and BuyEmAll:ItemIsUnique(self.itemLink)) then
-        self.afford = 1;
-    elseif (self.NumAltCurrency > 1) then
+    if (self.NumAltCurrency > 1) then
         for i = 2, self.NumAltCurrency do
             self.afford = min(self.afford, self.AltCurrAfford[i] or 999999);
         end
+    end
+
+    local uniqueAllowance = (self.itemID ~= nil) and self:UniqueAllowance(self.itemLink);
+    if (uniqueAllowance) then
+        self.afford = min(self.afford, uniqueAllowance);
     end
 
     self.max = min(self.fit, self.afford);

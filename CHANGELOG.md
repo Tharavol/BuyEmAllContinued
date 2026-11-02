@@ -13,6 +13,7 @@ All notable changes to BuyEmAll Continued are documented in this file. Upstream 
 - **Arrow keys can no longer take the amount out of range** ([#6](https://github.com/Tharavol/BuyEmAllContinued/issues/6)). Pressing them could take it to 0 or below, or past the maximum. They now stop at the same limits as the on-screen arrows.
 - **"You can fit" and the Max button now count the reagent bag for crafting reagents** ([#8](https://github.com/Tharavol/BuyEmAllContinued/issues/8)). Its free space was left out, so both came in too low when buying reagents.
 - **Shift-clicking no longer risks a Lua error with a profession bag equipped, or on vendor entries without an item link** ([#9](https://github.com/Tharavol/BuyEmAllContinued/issues/9)). The profession bag check used a global function Blizzard has deprecated, and the Azerite check was given an empty link.
+- **Unique items are now recognised in every game language, including "Unique (N)" items** ([#7](https://github.com/Tharavol/BuyEmAllContinued/issues/7)). The check only matched the English word "Unique", so other languages weren't limited, and items with a higher limit were missed. The most you can choose is now what's left of the limit. Items you can't afford no longer count as buyable just because they're unique.
 
 ## [4.1.5] - 2026-10-14
 
