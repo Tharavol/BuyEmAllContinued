@@ -640,6 +640,16 @@ do
     check("An exact number of stacks leaves nothing over", c:quantities() == "20,20", c:quantities())
 end
 
+print("--- #11 globals")
+do
+    local c = newClient({ locale = "deDE" })
+    check("#11 no BUYEMALL_MAX global", rawget(c.env, "BUYEMALL_MAX") == nil)
+    check("#11 no BUYEMALL_STACK global", rawget(c.env, "BUYEMALL_STACK") == nil)
+    check("#11 no BEAFrame global", rawget(c.env, "BEAFrame") == nil)
+    check("#11 Stack button is labelled from the locale", c.env.BuyEmAllStackButton.text == c.env.BuyEmAll.L.STACK, c.env.BuyEmAllStackButton.text)
+    check("#11 Max button is labelled from the locale", c.env.BuyEmAllMaxButton.text == c.env.BuyEmAll.L.MAX, c.env.BuyEmAllMaxButton.text)
+end
+
 print("--- Characterisation, not pass/fail")
 do
     local c = newClient({ items = { altItem(1, 1, 3) }, stackSize = 200 })

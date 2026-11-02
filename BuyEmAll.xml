@@ -145,7 +145,7 @@
 					</Anchor>
 				</Anchors>
 			</Button>
-			<Button name="BuyEmAllStackButton" inherits="BuyEmAllTooltipButtonTemplate" text="BUYEMALL_STACK">
+			<Button name="BuyEmAllStackButton" inherits="BuyEmAllTooltipButtonTemplate">
 				<Size>
 					<AbsDimension x="78" y="24" />
 				</Size>
@@ -162,7 +162,7 @@
 					</OnLoad>
 				</Scripts>
 			</Button>
-			<Button name="BuyEmAllMaxButton" inherits="BuyEmAllTooltipButtonTemplate" text="BUYEMALL_MAX">
+			<Button name="BuyEmAllMaxButton" inherits="BuyEmAllTooltipButtonTemplate">
 				<Size>
 					<AbsDimension x="78" y="24" />
 				</Size>

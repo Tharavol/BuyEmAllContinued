@@ -23,10 +23,6 @@ globals = {
 
     -- Replaced with the addon's own click handler.
     "MerchantItemButton_OnModifiedClick",
-
-    -- Button labels; BuyEmAll.xml reads them by name.
-    "BUYEMALL_MAX",
-    "BUYEMALL_STACK",
 }
 
 read_globals = {
@@ -54,7 +50,7 @@ read_globals = {
     -- Client, merchant and input API
     "BuyMerchantItem", "GetInventoryItemID", "GetLocale", "GetMerchantItemCostInfo",
     "GetMerchantItemCostItem", "GetMerchantItemLink", "GetMoney",
-    "IsControlKeyDown", "IsShiftKeyDown", "Screenshot", "UnitName",
+    "IsControlKeyDown", "IsShiftKeyDown", "Screenshot",
 }
 
 -- Mostly lines inherited from upstream; rewrapping them would only add churn before

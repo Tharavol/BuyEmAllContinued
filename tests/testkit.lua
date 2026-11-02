@@ -110,7 +110,6 @@ local function newClient(opts)
     env.MerchantItemButton_OnClick = function() c.onClick = c.onClick + 1 end
     env.IsShiftKeyDown = function() return true end
     env.IsControlKeyDown = function() return false end
-    env.UnitName = function() return "Vendor" end
     env.GetMoney = function() return c.money end
     env.GetMerchantItemLink = function(i) return c.items[i] and c.items[i].link end
     env.BuyMerchantItem = function(i, q) c.buys[#c.buys + 1] = { i, q, c.items[i] and c.items[i].link } end
