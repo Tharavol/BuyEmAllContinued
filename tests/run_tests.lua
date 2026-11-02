@@ -438,6 +438,188 @@ do
     check("#10 bundle 10, stack 7 stops at one bundle", deStack(alt(7), 10) == 5, deStack(alt(7), 10))
 end
 
+-- Opens the window on the first item and returns the client, its environment and the addon.
+local function open(opts)
+    local c = newClient(opts)
+    c:click(1)
+    return c, c.env, c.env.BuyEmAll
+end
+
+local function typeAmount(b, digits)
+    for digit in digits:gmatch(".") do b:OnChar(digit) end
+end
+
+-- Bags holding one free slot and a partial stack of 15 out of 20, so 25 fit and 5 of them are a partial stack.
+local function partialBag()
+    return { items = { item(1) }, stackSize = 20, bagFree = { [0] = 1 }, bagSlots = { [0] = 1 }, bagItems = { ["0:1"] = { itemID = 1, stackCount = 15 } } }
+end
+
+print("--- Free space")
+do
+    local c = open(partialBag())
+    check("A partial stack in a normal bag counts", c.env.BuyEmAll.fit == 25, c.env.BuyEmAll.fit)
+    check("The partial stack's room is kept apart", c.env.BuyEmAll.partialFit == 5, c.env.BuyEmAll.partialFit)
+
+    c = open({ items = { item(1) }, stackSize = 20, bagFree = { [0] = 1 }, bagSlots = { [0] = 1 }, bagItems = { ["0:1"] = { itemID = 2, stackCount = 15 } } })
+    check("A partial stack of another item doesn't count", c.env.BuyEmAll.fit == 20, c.env.BuyEmAll.fit)
+
+    c = open({ items = { item(1) }, stackSize = 20, bagFree = { [5] = 1 }, bagSlots = { [5] = 1 }, bagItems = { ["5:1"] = { itemID = 1, stackCount = 15 } } })
+    check("A partial stack in a bag that can't hold the item doesn't count", c.env.BuyEmAll.fit == 0, c.env.BuyEmAll.fit)
+
+    local e, b
+    c, e, b = open({ items = { item(1) }, stackUnknown = true })
+    check("Stack size not loaded: the window stays closed", not e.BuyEmAllFrame.shown and b.max == 0, b.max)
+    check("Stack size not loaded: nothing is bought", #c.buys == 0 and c.onClick == 0, c.onClick)
+    c.stackUnknown = false
+    c:click(1)
+    check("Stack size loaded: the next click opens the window", e.BuyEmAllFrame.shown and b.fit == 200, b.fit)
+end
+
+print("--- Stack button")
+do
+    local function stack(e) e.BuyEmAll:OnClick(e.BuyEmAllStackButton, "LeftButton") end
+
+    local _, e, b = open({ items = { item(1) } })
+    stack(e)
+    check("Stack from 1 gives one stack", b.split == 20 and e.BuyEmAllText:GetText() == "20", b.split)
+    stack(e)
+    check("Stack from one stack gives two", b.split == 40, b.split)
+    b.typing = false
+    typeAmount(b, "25")
+    stack(e)
+    check("Stack from a typed 25 goes to the next whole stack", b.split == 40, b.split)
+
+    _, e, b = open({ items = { item(1) }, money = 3000 })
+    stack(e)
+    check("Stack is disabled when the next stack is past the most", b.split == 20 and e.BuyEmAllStackButton:IsEnabled() == false, e.BuyEmAllStackButton:IsEnabled())
+
+    _, e, b = open(partialBag())
+    stack(e)
+    check("Stack fills the partial stack first", b.split == 5, b.split)
+    stack(e)
+    check("Stack then adds a whole stack", b.split == 25, b.split)
+    check("Stack is disabled at the most that fits", e.BuyEmAllStackButton:IsEnabled() == false, e.BuyEmAllStackButton:IsEnabled())
+
+    _, e, b = open({ items = { altItem(1, 1, 5) }, stackSize = 20, freeSlots = 10 })
+    stack(e)
+    check("Bundles: Stack from one bundle gives one stack", b.split == 20, b.split)
+    stack(e)
+    check("Bundles: Stack from one stack gives two", b.split == 40, b.split)
+end
+
+print("--- Limits")
+do
+    local function stocked(n) return { items = { item(1, { numAvailable = n }) } } end
+    local c, e, b = open(stocked(3))
+    check("Stock of 3 limits gold items to 3", b.max == 3 and e.BuyEmAllFrame.shown, b.max)
+    c, e, b = open(stocked(1))
+    check("Stock of 1 buys directly", b.max == 1 and c.onClick == 1 and not e.BuyEmAllFrame.shown, b.max)
+    c, e, b = open(stocked(0))
+    check("Stock of 0 buys nothing", b.max == 0 and c.onClick == 0 and not e.BuyEmAllFrame.shown, b.max)
+    c, e, b = open(stocked(500))
+    check("Stock above what fits leaves bag space as the limit", b.max == 200, b.max)
+
+    c, e, b = open({ items = { item(1) }, money = 2500 })
+    check("Money limits the most", b.max == 25, b.max)
+    c, e, b = open({ items = { item(1, { price = 0 }) }, money = 0 })
+    check("A free item is limited by bag space alone", b.max == 200, b.max)
+    c, e, b = open({ items = { altItem(1, 0, 1) } })
+    check("An alternate-currency entry with no costs is limited by bag space alone", b.max == 200 and e.BuyEmAllFrame.shown, b.max)
+
+    c, e, b = open({ items = { item(1, { price = 100, stackCount = 5 }) }, money = 1000 })
+    check("A gold bundle's price is shared across its items", b.max == 50, b.max)
+    e.BuyEmAll:OnClick(e.BuyEmAllMaxButton, "LeftButton")
+    check("Max on a gold bundle shows the full cost", b.split == 50 and e.BuyEmAllCurrencyAmt2:GetText() == "10" and e.BuyEmAllCurrencyAmt3:GetText() == "0", e.BuyEmAllCurrencyAmt2:GetText())
+
+    c, e, b = open({ items = { item(1, { price = 12345 }) } })
+    check("Gold cost splits into gold, silver and copper", e.BuyEmAllCurrencyAmt1:GetText() == "1" and e.BuyEmAllCurrencyAmt2:GetText() == "23" and e.BuyEmAllCurrencyAmt3:GetText() == "45", e.BuyEmAllCurrencyAmt1:GetText())
+end
+
+print("--- Typing an amount")
+do
+    local function typed(digits, opts)
+        local _, e, b = open(opts or { items = { item(1) } })
+        typeAmount(b, digits)
+        return b.split, e, b
+    end
+    local split, e = typed("5")
+    check("Typing replaces the starting amount", split == 5 and e.BuyEmAllText:GetText() == "5", split)
+    check("Typing builds up digits", typed("12") == 12, (typed("12")))
+    check("Typing past the most stops at the most", typed("999") == 200, (typed("999")))
+    check("Typing 0 first gives 1", typed("0") == 1, (typed("0")))
+    check("Letters are ignored", typed("a") == 1, (typed("a")))
+    check("Letters between digits are ignored", typed("1a2") == 12, (typed("1a2")))
+
+    local b
+    split, e, b = typed("123")
+    b:OnKeyDown("BACKSPACE")
+    check("Backspace removes a digit", b.split == 12 and e.BuyEmAllText:GetText() == "12", b.split)
+    b:OnKeyDown("BACKSPACE")
+    check("Backspace to one digit stops at 1", b.split == 1 and b.typing == false, b.split)
+    b:OnKeyDown("BACKSPACE")
+    check("Backspace at 1 stays 1", b.split == 1, b.split)
+    split, e, b = typed("")
+    e.BuyEmAll:OnClick(e.BuyEmAllMaxButton, "LeftButton")
+    b:OnKeyDown("DELETE")
+    check("Delete before typing changes nothing", b.split == 200, b.split)
+
+    local c
+    c, e = open({ items = { altItem(1, 1, 5) }, stackSize = 20, freeSlots = 10 })
+    typeAmount(e.BuyEmAll, "7")
+    check("Bundles: a typed 7 costs two bundles", e.BuyEmAllCurrencyAmt1:GetText() == "4", e.BuyEmAllCurrencyAmt1:GetText())
+    e.BuyEmAll:OnClick(e.BuyEmAllOkayButton, "LeftButton")
+    c:tick(2)
+    check("Bundles: a typed 7 buys two bundles", c:quantities() == "10", c:quantities())
+
+    c, e = open({ items = { altItem(1, 1, 5) }, stackSize = 20, freeSlots = 10 })
+    typeAmount(e.BuyEmAll, "7")
+    e.BuyEmAll:OnKeyDown("BACKSPACE")
+    e.BuyEmAll:OnClick(e.BuyEmAllOkayButton, "LeftButton")
+    c:tick(2)
+    check("Bundles: backspacing to 1 still buys one bundle", c:quantities() == "5", c:quantities())
+end
+
+print("--- Purchase paths")
+do
+    local function pricedIn(costs, preset)
+        return item(1, { price = 0, stackCount = preset or 1, hasExtendedCost = true, costs = costs })
+    end
+    local itemCost = { tex = "t", price = 2, link = item(555).link }
+
+    local c, e, b = open({ items = { pricedIn({ itemCost }) }, itemCount = 10 })
+    check("Priced in an item: owned items limit the most", b.max == 5 and e.BuyEmAllFrame.shown, b.max)
+    c, e, b = open({ items = { pricedIn({ altItem(1, 1).costs[1], itemCost }) }, itemCount = 10 })
+    check("Priced in a currency and an item: the scarcer one limits the most", b.max == 5, b.max)
+    c, e, b = open({ items = { pricedIn({ itemCost }, 3) }, itemCount = 10 })
+    check("Priced in an item, bundle of 3: counted in items", b.max == 15, b.max)
+    c, e, b = open({ items = { pricedIn({ itemCost }) }, itemCount = 1 })
+    check("Priced in an item, too few owned: nothing is bought", b.max == 0 and c.onClick == 0, b.max)
+
+    local currencyLink = "|cff|Hcurrency:55:0|h[C]|h|r"
+    local function currencyForCurrency()
+        local i = altItem(1, 1)
+        i.link = currencyLink
+        return i
+    end
+    c, e, b = open({ items = { currencyForCurrency() } })
+    check("Currency for a currency, no cap: the cost limits the most", b.max == 50000 and e.BuyEmAllFrame.shown, b.max)
+    b:DoPurchase(300)
+    check("Currency for a currency: bought all at once", c:quantities() == "300" and c.loopFrame:GetScript("OnUpdate") == nil, c:quantities())
+
+    c, e, b = open({ items = { item(1, { link = currencyLink }) }, money = 1000 })
+    check("Currency for gold, no cap: money limits the most", b.max == 10, b.max)
+    c, e, b = open({ items = { item(1, { link = currencyLink }) }, currency = { quantity = 95, maxQuantity = 100 } })
+    check("Currency for gold: limited to the room under the cap", b.max == 5, b.max)
+    b:DoPurchase(5)
+    check("Currency for gold: bought all at once", c:quantities() == "5", c:quantities())
+
+    c = startRun()
+    c.buys = {}
+    c.env.BuyEmAll:DoPurchase(40)
+    c:tick(4)
+    check("An exact number of stacks leaves nothing over", c:quantities() == "20,20", c:quantities())
+end
+
 print("--- Characterisation, not pass/fail")
 do
     local c = newClient({ items = { altItem(1, 1, 3) }, stackSize = 200 })
@@ -445,6 +627,18 @@ do
     c.env.BuyEmAll:DoPurchase(300)
     c:tick(4)
     note("DoPurchase of 300, bundle 3, stack 200 sends", c:quantities())
+
+    local _, e, b = open(partialBag())
+    b.max = 100
+    typeAmount(b, "10")
+    e.BuyEmAll:OnClick(e.BuyEmAllStackButton, "LeftButton")
+    note("Stack from a typed 10, with room for a partial stack of 5, gives", b.split)
+
+    local cost = altItem(1, 1).costs[1]
+    local capped = altItem(1, 1)
+    capped.link = "|cff|Hcurrency:55:0|h[C]|h|r"
+    _, e, b = open({ items = { capped }, currencies = { [capped.link] = { quantity = 95, maxQuantity = 100 }, [cost.link] = { quantity = 1000, maxQuantity = 0 } } })
+    note("Currency for a currency, holding 95 of a cap of 100: the most is", b.max)
 end
 
 T.finish()

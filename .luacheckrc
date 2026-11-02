@@ -72,4 +72,5 @@ files["localisation/**"] = {
 files["tests/**"] = {
     max_line_length = false,
     read_globals = {"arg"},
+    ignore = {"311"}, -- Cases reuse c, e and b, and not every case reads all three.
 }

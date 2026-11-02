@@ -123,9 +123,13 @@ local function newClient(opts)
     env.C_AzeriteEmpoweredItem = { IsAzeriteEmpoweredItemByID = function() return false end }
     env.C_Item = {
         GetItemFamily = function() return 0 end,
-        GetItemMaxStackSizeByID = function() return c.stackSize end,
+        GetItemMaxStackSizeByID = function()
+            if c.stackUnknown then return nil end
+            return c.stackSize
+        end,
         GetItemCount = function() return c.itemCount end,
     }
+    c.stackUnknown = opts.stackUnknown
     c.bagFree, c.bagSlots, c.bagItems, c.isReagent, c.uncached = opts.bagFree, opts.bagSlots or {}, opts.bagItems or {}, opts.isReagent or false, opts.uncached
     env.Enum = { BagIndex = { Backpack = 0, Bag_1 = 1, Bag_2 = 2, Bag_3 = 3, Bag_4 = 4, ReagentBag = 5 } }
     env.C_Item.GetItemInfo = function()
@@ -168,7 +172,7 @@ local function newClient(opts)
         return { lines = lines }
     end }
     if opts.owned then env.C_Item.GetItemCount = function() return opts.owned end end
-    env.C_CurrencyInfo = { GetCurrencyInfoFromLink = function() return c.currency end }
+    env.C_CurrencyInfo = { GetCurrencyInfoFromLink = function(link) return opts.currencies and opts.currencies[link] or c.currency end }
 
     local function load(rel)
         local chunk = assert(loadstring(readFile(ROOT .. "/" .. rel), "@" .. rel))
