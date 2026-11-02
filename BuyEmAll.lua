@@ -118,9 +118,17 @@ function BuyEmAll:GetFreeBagSpace(itemID)
         return 0, 1; -- Item data not cached yet.
     end
 
-    for currentBag = 0, 4 do
+    local isReagent = select(17, C_Item.GetItemInfo(itemID));
+
+    for currentBag = Enum.BagIndex.Backpack, Enum.BagIndex.ReagentBag do
         local freeSpace, bagType = C_Container.GetContainerNumFreeSlots(currentBag);
-        if (bagType == 0 or (BuyEmAll:HasBagEquippedInSlot(currentBag) and (bagType == itemType or bit.band(itemType, bagType) == bagType))) then
+        local canHold;
+        if (currentBag == Enum.BagIndex.ReagentBag) then
+            canHold = isReagent; -- Reports family 0 like a normal bag, but only takes crafting reagents.
+        else
+            canHold = bagType == 0 or (BuyEmAll:HasBagEquippedInSlot(currentBag) and (bagType == itemType or bit.band(itemType, bagType) == bagType));
+        end
+        if (canHold) then
             canFit = canFit + (freeSpace * stackSize);
 
             local totalBagSlots = C_Container.GetContainerNumSlots(currentBag);

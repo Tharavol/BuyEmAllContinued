@@ -11,6 +11,7 @@ All notable changes to BuyEmAll Continued are documented in this file. Upstream 
 - **Bundles bought with currencies no longer go past what fits in your bags** ([#5](https://github.com/Tharavol/BuyEmAllContinued/issues/5), [#23](https://github.com/Tharavol/BuyEmAllContinued/issues/23)). Items sold in bundles for currencies (say, 5 per purchase) are bought in whole bundles, and an amount in between was always rounded up, even when the extra bundle wouldn't fit. The most you can choose is now the number of whole bundles that fit, so the Max button matches what gets bought, and the window doesn't open if not even one bundle fits.
 - **`/buyemall confirm` now stays off after a reload or relog** ([#22](https://github.com/Tharavol/BuyEmAllContinued/issues/22)). Turning off the large-purchase confirmation only lasted until the next login, when it came back on.
 - **Arrow keys can no longer take the amount out of range** ([#6](https://github.com/Tharavol/BuyEmAllContinued/issues/6)). Pressing them could take it to 0 or below, or past the maximum. They now stop at the same limits as the on-screen arrows.
+- **"You can fit" and the Max button now count the reagent bag for crafting reagents** ([#8](https://github.com/Tharavol/BuyEmAllContinued/issues/8)). Its free space was left out, so both came in too low when buying reagents.
 
 ## [4.1.5] - 2026-10-14
 
