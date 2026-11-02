@@ -6,6 +6,7 @@ manual-changelog:
 
 ignore:
   - .github
+  - .luacheckrc
   - tests
   - CHANGELOG.md
   - README.md

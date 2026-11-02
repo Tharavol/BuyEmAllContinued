@@ -94,7 +94,7 @@ BEAframe:Hide();
 BEAframe:RegisterEvent("ADDON_LOADED");
 BEAframe:RegisterEvent("MERCHANT_CLOSED");
 local function eventHandler(self, event, ...)
-    local arg1, arg2, arg3, arg4, arg5 = ...;
+    local arg1 = ...;
     if (event == "ADDON_LOADED") and (arg1 == "BuyEmAll") then
 		BEAConfirmToggle = not (BEAConfirmToggle == false or BEAConfirmToggle == 0); -- On unless saved as off; older versions saved 0.
     elseif (event == "MERCHANT_CLOSED") then
@@ -181,7 +181,6 @@ function BuyEmAll:MerchantItemButton_OnModifiedClick(frame, button)
         if not info then return end
 
         local name = info.name;
-        local texture = info.texture;
         local price = info.price;
         local quantity = info.stackCount;  -- was 'quantity' in old API
         local numAvailable = info.numAvailable;
@@ -198,7 +197,7 @@ function BuyEmAll:MerchantItemButton_OnModifiedClick(frame, button)
 
         if (self.itemLink == nil) then
             self.ConfirmNoItemLink = self.itemIndex;
-            local dialog = StaticPopup_Show("BUYEMALL_CONFIRM2", quantity, self.itemName);
+            StaticPopup_Show("BUYEMALL_CONFIRM2", quantity, self.itemName);
             return
         end
 
@@ -210,8 +209,8 @@ function BuyEmAll:MerchantItemButton_OnModifiedClick(frame, button)
             self:AltCurrencyHandling(self.itemIndex, frame);
             return
         end
-        
-        
+
+
         if (strmatch(self.itemLink, "item")) then -- Check if purchase is an item and setup the needed variables.
             self.itemID = tonumber(strmatch(self.itemLink, "item:(%d+):"));
             local bagMax, stack = self:GetFreeBagSpace(self.itemID);
@@ -277,7 +276,7 @@ function BuyEmAll:AltCurrencyHandling(itemIndex, frame)
     self.AltCurrencyMode = true;
 
     self.NumAltCurrency = GetMerchantItemCostInfo(itemIndex);
-    
+
     self.AltCurrTex = {};
     self.AltCurrPrice = {};
     self.AltCurrAfford = {};
@@ -367,11 +366,11 @@ end
 
 function BuyEmAll:VerifyPurchase(amount)
     amount = amount or self.split;
-    
+
     if (self.AltCurrencyMode == true) then
         amount = self:AltCurrRounding(amount);
     end
-    
+
     if (amount > 0) then
         -- amount = (amount / self.preset) * self.preset; Leaving this here just in case, but commenting it out because as far as I can tell and test, it does nothing.
         if (amount > self.stack) and (amount > self.defaultStack) then
@@ -514,9 +513,9 @@ function BuyEmAll:UpdateDisplay()
     if (self.max < self.stackClick) then
         BuyEmAllStackButton:Disable();
     end
-    
+
     local purchase = self.split;
-    
+
     if (self.AltCurrencyMode == false) then
         local cost = ceil(purchase * (self.price / self.defaultStack));
         local gold = floor(cost / 10000);
@@ -526,11 +525,11 @@ function BuyEmAll:UpdateDisplay()
         BuyEmAllCurrencyAmt1:SetText(gold);
         BuyEmAllCurrencyAmt2:SetText(silver);
         BuyEmAllCurrencyAmt3:SetText(copper);
-    
-    elseif (#self.AltCurrPrice >= 1) then  
+
+    elseif (#self.AltCurrPrice >= 1) then
         local amount = self:AltCurrRounding(purchase);
         self.AltNumPurchases = amount / self.preset; -- Adjustment for not being able to buy less than the preset of items using alternate currency.
-        
+
         BuyEmAllCurrencyAmt1:SetText(self.AltNumPurchases * self.AltCurrPrice[1]);
         BuyEmAllCurrency1:SetTexture(self.AltCurrTex[1]);
         BuyEmAllCurrencyAmt2:SetText(self.AltNumPurchases * (self.AltCurrPrice[2] or 0));
@@ -612,8 +611,8 @@ function BuyEmAll:OnChar(text)
         self.typing = true;
         self.split = 0;
     end
-    
-    
+
+
     local input = (self.split * 10) + text; -- Adds a local variable to hold the input numbers and keep track of them.
 
     if (input == self.split) then   -- Checks if the input number is the same as the current value, if so it calls to update the UI and exits.
@@ -720,7 +719,7 @@ function BuyEmAll:OnEnter(frame)
     local lines = self.lines[frame == BuyEmAllMaxButton and "max" or "stack"];
 
     lines.amount = self[lines.field];
-    for i, line in ipairs(lines) do
+    for _, line in ipairs(lines) do
         line.amount = self[line.field];
     end
 
