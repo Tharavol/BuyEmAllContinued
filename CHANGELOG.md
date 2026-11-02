@@ -2,6 +2,11 @@
 
 All notable changes to BuyEmAll Continued are documented in this file. Upstream history up to v4.1.0 is in [Changelog.txt](Changelog.txt).
 
+## [Unreleased]
+
+### Internal
+- The repository now includes tests that run the addon against stand-in WoW APIs, with no game client ([#16](https://github.com/Tharavol/BuyEmAllContinued/issues/16)). They aren't part of the release archive.
+
 ## [4.1.6] - 2026-11-01
 
 ### Fixed

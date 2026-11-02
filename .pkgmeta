@@ -6,6 +6,7 @@ manual-changelog:
 
 ignore:
   - .github
+  - tests
   - CHANGELOG.md
   - README.md
   - ATTRIBUTION.md

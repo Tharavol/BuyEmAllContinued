@@ -32,3 +32,7 @@ jobs:
             echo ".github/ should not ship in the release archive (see .pkgmeta)" >&2
             exit 1
           fi
+          if unzip -l "$zip" | grep -q 'BuyEmAll/tests/'; then
+            echo "tests/ should not ship in the release archive (see .pkgmeta)" >&2
+            exit 1
+          fi

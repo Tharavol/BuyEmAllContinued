@@ -40,6 +40,14 @@ Upgrading from the original BuyEmAll needs no other steps: the folder and settin
 
 Please report bugs and requests on the [issue tracker](https://github.com/Tharavol/BuyEmAllContinued/issues). Include the full Lua error text (with BugSack/BugGrabber if you use them), the vendor and the item.
 
+## Tests
+
+`tests/` runs the addon against stand-in WoW APIs, with no game client. It needs LuaJIT, which matches the client's Lua 5.1 behavior:
+
+```
+luajit tests/run_tests.lua
+```
+
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md). Upstream history before this continuation is in [Changelog.txt](Changelog.txt).
