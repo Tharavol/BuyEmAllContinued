@@ -19,6 +19,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Fails before anything is published if CHANGELOG.md has no section for this tag. Written outside the
+      # checkout so the packager doesn't pick it up.
+      - name: Extract release notes
+        run: sh .github/scripts/release-notes.sh "$GITHUB_REF_NAME" > "$RUNNER_TEMP/release-notes.md"
+
       # Publishes to GitHub only, like release.yml.
       - name: Package and release
         uses: BigWigsMods/packager@v2
@@ -27,3 +32,10 @@ jobs:
 
       - name: Verify archive layout
         run: sh .github/scripts/check-archive.sh
+
+      # The packager posts the whole of CHANGELOG.md (.pkgmeta manual-changelog) as the release body; replace it
+      # with this version's section.
+      - name: Set release notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release edit "$GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/release-notes.md"
