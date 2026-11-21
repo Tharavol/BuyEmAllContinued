@@ -27,7 +27,6 @@ BuyEmAll.AltCurrPrice = nil;      -- The cost of one bundle in each.
 BuyEmAll.AltCurrAfford = nil;     -- How many can be paid for with each.
 BuyEmAll.ConfirmNoItemLink = 0;   -- The list position of the entry without a link awaiting confirmation.
 BuyEmAll.OrigMerchantItemButton_OnModifiedClick = nil; -- Blizzard's click handler, set in OnLoad.
-BuyEmAll.OrigMerchantFrame_OnHide = nil;               -- Blizzard's OnHide script, set in OnLoad.
 
 function BuyEmAll:OnLoad()
     BuyEmAllStackButton:SetText(L.STACK);
@@ -63,15 +62,21 @@ function BuyEmAll:OnLoad()
     BuyEmAllCurrencyAmt2:SetText();
     BuyEmAllCurrencyAmt3:SetText();
 
+    -- Shift-click has to open BuyEmAll instead of Blizzard's stack split frame, so the global the merchant buttons
+    -- call is replaced rather than hooked: a hooksecurefunc hook runs after the original, when the split frame is
+    -- already open. The merchant buttons look the global up on every click, so other addons that hook it after this
+    -- one loads still see every click, and clicks BuyEmAll doesn't handle go to the original. Buying works from addon
+    -- code, so the taint a replaced global carries doesn't block it.
     self.OrigMerchantItemButton_OnModifiedClick = MerchantItemButton_OnModifiedClick;
     MerchantItemButton_OnModifiedClick = function(frame, button)
         self:MerchantItemButton_OnModifiedClick(frame, button);
     end
 
-    self.OrigMerchantFrame_OnHide = MerchantFrame:GetScript("OnHide");
-    MerchantFrame:SetScript("OnHide", function(...)
-        return self:MerchantFrame_OnHide(...);
-    end)
+    -- Closing the vendor needs nothing suppressed, so OnHide is hooked, leaving Blizzard's handler and other addons'
+    -- hooks in place.
+    MerchantFrame:HookScript("OnHide", function()
+        self:MerchantFrame_OnHide();
+    end);
 
     SLASH_BUYEMALL1 = "/buyemall";
     SlashCmdList["BUYEMALL"] = function(message)
@@ -131,10 +136,9 @@ BEAframe:SetScript("OnEvent", eventHandler);
 
 -- Makes sure the BuyEmAll frame goes away, and any purchase in progress stops, when you leave a vendor.
 
-function BuyEmAll:MerchantFrame_OnHide(...)
+function BuyEmAll:MerchantFrame_OnHide()
     BuyEmAllFrame:Hide();
     self:StopPurchaseLoop();
-    return self.OrigMerchantFrame_OnHide(...);
 end
 
 function BuyEmAll:HasBagEquippedInSlot(slotID)

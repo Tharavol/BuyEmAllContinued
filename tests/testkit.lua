@@ -30,7 +30,7 @@ local function readFile(path)
 end
 
 local function widget()
-    local w = { text = nil, enabled = true, shown = false, texture = nil, scripts = {} }
+    local w = { text = nil, enabled = true, shown = false, texture = nil, scripts = {}, setScriptCalls = {} }
     function w:SetText(v) self.text = v end
     function w:GetText() return self.text ~= nil and tostring(self.text) or nil end
     function w:SetTexture(v) self.texture = v end
@@ -44,8 +44,20 @@ local function widget()
     end
     function w:ClearAllPoints() end
     function w:SetPoint() end
-    function w:SetScript(k, f) self.scripts[k] = f end
+    function w:SetScript(k, f)
+        self.scripts[k] = f
+        self.setScriptCalls[k] = (self.setScriptCalls[k] or 0) + 1
+    end
     function w:GetScript(k) return self.scripts[k] end
+    -- Runs the hook after the existing script. As in the client, GetScript then returns
+    -- a new function rather than the original (checked in game for #13).
+    function w:HookScript(k, f)
+        local original = self.scripts[k]
+        self.scripts[k] = function(...)
+            if original then original(...) end
+            f(...)
+        end
+    end
     function w:RegisterEvent() end
     return w
 end
@@ -104,7 +116,7 @@ local function newClient(opts)
     env.GameTooltip = setmetatable({}, { __index = function() return function() end end })
     env.MerchantFrame = widget()
     env.MerchantFrame.selectedTab = 1
-    env.MerchantFrame:SetScript("OnHide", function() end)
+    env.MerchantFrame:SetScript("OnHide", function() c.blizzardOnHide = (c.blizzardOnHide or 0) + 1 end)
     env.ChatFrame1EditBox = { HasFocus = function() return false end }
     env.MerchantItemButton_OnModifiedClick = function() end
     env.MerchantItemButton_OnClick = function() c.onClick = c.onClick + 1 end

@@ -20,6 +20,7 @@ All notable changes to BuyEmAll Continued are documented in this file. The origi
 - Each GitHub release's notes are now that version's section of this changelog rather than the whole file ([#17](https://github.com/Tharavol/BuyEmAllContinued/issues/17)). A stable tag without a section fails before anything is published.
 - The upstream release notes from `Changelog.txt` are now part of this file, under Upstream history, and `Changelog.txt` is gone ([#18](https://github.com/Tharavol/BuyEmAllContinued/issues/18)).
 - The translation template points at this repository instead of the upstream one, and the README explains how to add a translation ([#19](https://github.com/Tharavol/BuyEmAllContinued/issues/19)).
+- BuyEmAll now hooks the merchant frame's `OnHide` script instead of replacing it, so Blizzard's handler and other addons' hooks stay in place ([#13](https://github.com/Tharavol/BuyEmAllContinued/issues/13)). The shift-click handler is still replaced, since a hook would run after Blizzard's stack split frame has opened; the reasons are recorded in `OnLoad`.
 
 ## [4.1.6] - 2026-11-01
 

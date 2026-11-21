@@ -36,16 +36,20 @@ do
     c:tick(1)
     c.items[1] = nil
     c:event("MERCHANT_CLOSED")
-    c.env.MerchantFrame:GetScript("OnHide")(c.env.MerchantFrame)
+    c.env.MerchantFrame:Hide()
     c:tick(5)
     check("#2 MERCHANT_CLOSED stops further buys", c:quantities() == "20", c:quantities())
     check("#2 event + OnHide print one message, with 30 of 50", #c.printed == 1 and c.printed[1]:find("30 of 50", 1, true), table.concat(c.printed, " | "))
 
     c = startRun()
     c:tick(1)
-    c.env.MerchantFrame:GetScript("OnHide")(c.env.MerchantFrame)
+    c.env.MerchantFrame:Hide()
     c:tick(5)
     check("#2 MerchantFrame OnHide alone stops further buys", c:quantities() == "20", c:quantities())
+    check("#13 Blizzard's MerchantFrame OnHide still runs", c.blizzardOnHide == 1, tostring(c.blizzardOnHide))
+    -- The stand-in client's own SetScript is the only one; the addon hooks instead.
+    check("#13 MerchantFrame's OnHide script is hooked, not replaced",
+        c.env.MerchantFrame.setScriptCalls.OnHide == 1, tostring(c.env.MerchantFrame.setScriptCalls.OnHide))
 
     c = startRun()
     c:tick(1)
