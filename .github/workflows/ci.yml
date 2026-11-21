@@ -60,18 +60,4 @@ jobs:
 
       - name: Verify archive layout
         if: steps.check_tag.outputs.tag == ''
-        run: |
-          zip=$(ls .release/*.zip)
-          unzip -l "$zip"
-          for f in BuyEmAll.toc BuyEmAll.lua BuyEmAll.xml init.lua LICENSE localisation/index.xml localisation/enUS.lua; do
-            unzip -l "$zip" | grep -q "BuyEmAll/$f" || { echo "missing BuyEmAll/$f" >&2; exit 1; }
-          done
-
-          # Dev-only tooling / docs; .pkgmeta ignores them, and they should stay ignored.
-          # A bare `!` here would be exempt from set -e and silently not fail.
-          for f in .github/ .luacheckrc tests/ CHANGELOG.md; do
-            if unzip -l "$zip" | grep -q "BuyEmAll/$f"; then
-              echo "$f should not ship in the release archive (see .pkgmeta)" >&2
-              exit 1
-            fi
-          done
+        run: sh .github/scripts/check-archive.sh

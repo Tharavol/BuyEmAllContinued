@@ -1,0 +1,29 @@
+name: Pre-release
+
+on:
+  push:
+    tags:
+      # alpha/beta only: the packager reads "alpha"/"beta" from the tag name to mark the GitHub release as a
+      # prerelease. Stable vX.Y.Z tags go through release.yml, so the two never both run on one tag.
+      - "v[0-9]+.[0-9]+.[0-9]+-alpha*"
+      - "v[0-9]+.[0-9]+.[0-9]+-beta*"
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # Publishes to GitHub only, like release.yml.
+      - name: Package and release
+        uses: BigWigsMods/packager@v2
+        env:
+          GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify archive layout
+        run: sh .github/scripts/check-archive.sh

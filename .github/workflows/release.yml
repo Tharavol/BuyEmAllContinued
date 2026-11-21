@@ -3,6 +3,7 @@ name: Release
 on:
   push:
     tags:
+      # Stable releases only; vX.Y.Z-alpha.N and -beta.N tags go through prerelease.yml.
       - "v[0-9]+.[0-9]+.[0-9]+"
 
 permissions:
@@ -22,17 +23,4 @@ jobs:
           GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify archive layout
-        run: |
-          zip=$(ls .release/*.zip)
-          unzip -l "$zip"
-          for f in BuyEmAll.toc BuyEmAll.lua BuyEmAll.xml init.lua LICENSE localisation/index.xml localisation/enUS.lua; do
-            unzip -l "$zip" | grep -q "BuyEmAll/$f" || { echo "missing BuyEmAll/$f" >&2; exit 1; }
-          done
-          if unzip -l "$zip" | grep -q 'BuyEmAll/.github/'; then
-            echo ".github/ should not ship in the release archive (see .pkgmeta)" >&2
-            exit 1
-          fi
-          if unzip -l "$zip" | grep -q 'BuyEmAll/tests/'; then
-            echo "tests/ should not ship in the release archive (see .pkgmeta)" >&2
-            exit 1
-          fi
+        run: sh .github/scripts/check-archive.sh
