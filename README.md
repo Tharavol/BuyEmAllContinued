@@ -40,6 +40,18 @@ Upgrading from the original BuyEmAll needs no other steps: the folder and settin
 
 Please report bugs and requests on the [issue tracker](https://github.com/Tharavol/BuyEmAllContinued/issues). Include the full Lua error text (with BugSack/BugGrabber if you use them), the vendor and the item.
 
+## Translations
+
+BuyEmAll ships with German, English, Spanish, French, Korean, Portuguese, Russian and Simplified and Traditional Chinese text. Other game languages use English.
+
+To add or update a translation:
+
+1. Copy [`localisation/Localization.template.lua`](localisation/Localization.template.lua) to `localisation/<locale>.lua` (for example `itIT.lua`) and change `xxXX` in it to that locale code.
+2. Translate the strings. The keys are `MAX` and `STACK` (button text), `CONFIRM` (the large-purchase question), `STACK_PURCH`, `STACK_SIZE` and `PARTIAL` (Stack tooltip), `MAX_PURCH`, `FIT`, `AFFORD` and `AVAILABLE` (Max tooltip), and `PURCHASE_STOPPED` (the chat message when a purchase stops early). Keep each `%d` and `%s` in place.
+3. Add a `<Script file="<locale>.lua"/>` line for it to [`localisation/index.xml`](localisation/index.xml).
+
+Any key left out shows in English, so a partial translation still works. Send it as a pull request, or paste the file into an [issue](https://github.com/Tharavol/BuyEmAllContinued/issues). Translator credits stay at the top of each file.
+
 ## Tests
 
 `tests/` runs the addon against stand-in WoW APIs, with no game client. It needs LuaJIT, which matches the client's Lua 5.1 behavior:

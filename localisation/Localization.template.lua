@@ -1,9 +1,13 @@
--- If you'd like to add a new locale, please open a pull request on the GitHub repository here: https://github.com/J141/WoW-BuyemAll-live/pulls
--- If you don't know what a pull request is or how to do it, you may also open an issue and just paste below code into the issue. I will then make sure the localisation gets included into the addon. Issues url: https://github.com/J141/WoW-BuyemAll-live/issues
-
+-- Template for a new translation. Copy this file to localisation/<locale>.lua (for example itIT.lua), set the
+-- locale code below, translate the strings, and add the file to localisation/index.xml.
+--
+-- Pull requests: https://github.com/Tharavol/BuyEmAllContinued/pulls
+-- Without a pull request, open an issue with the translated file pasted in:
+-- https://github.com/Tharavol/BuyEmAllContinued/issues
+--
 -- Any key left out falls back to the English text in enUS.lua.
 
-if GetLocale() == "xxXX" then --change xxXX to the language code, like esES, esMX, frFR or nlNL.
+if GetLocale() == "xxXX" then --change xxXX to the locale code, like itIT.
 	BuyEmAll.L = {
 	MAX 			= "Max",
 	STACK 		= "Stack",

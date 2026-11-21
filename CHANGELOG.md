@@ -19,6 +19,7 @@ All notable changes to BuyEmAll Continued are documented in this file. The origi
 - The daily TOC Interface check tracks both the retail and WoW Forever versions, so its bump doesn't rewrite the Interface line to retail only ([#32](https://github.com/Tharavol/BuyEmAllContinued/issues/32)).
 - Each GitHub release's notes are now that version's section of this changelog rather than the whole file ([#17](https://github.com/Tharavol/BuyEmAllContinued/issues/17)). A stable tag without a section fails before anything is published.
 - The upstream release notes from `Changelog.txt` are now part of this file, under Upstream history, and `Changelog.txt` is gone ([#18](https://github.com/Tharavol/BuyEmAllContinued/issues/18)).
+- The translation template points at this repository instead of the upstream one, and the README explains how to add a translation ([#19](https://github.com/Tharavol/BuyEmAllContinued/issues/19)).
 
 ## [4.1.6] - 2026-11-01
 
