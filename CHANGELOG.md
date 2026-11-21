@@ -4,6 +4,9 @@ All notable changes to BuyEmAll Continued are documented in this file. Upstream 
 
 ## [Unreleased]
 
+### Added
+- Loads on World of Warcraft: Forever as well as retail: the TOC now lists Interface 16001 and drops the stale 120000 and 120001 values ([#31](https://github.com/Tharavol/BuyEmAllContinued/issues/31)).
+
 ### Fixed
 - **The Stack button no longer lowers the amount** ([#28](https://github.com/Tharavol/BuyEmAllContinued/issues/28)). With a partial stack in your bags, typing an amount past the room left in that stack and clicking Stack could take the amount down. It now always goes up to the next amount that fills a stack.
 
@@ -13,6 +16,7 @@ All notable changes to BuyEmAll Continued are documented in this file. Upstream 
 - Internal cleanup with no intended change in behavior ([#11](https://github.com/Tharavol/BuyEmAllContinued/issues/11)): addon state is declared in one place, the `BUYEMALL_MAX`, `BUYEMALL_STACK` and `BEAFrame` globals are gone, and dead code and outdated comments are removed.
 - New issues offer a bug report form, asking for the Lua error, game and addon versions, the vendor and item, and other merchant or bag addons, and a feature request form ([#20](https://github.com/Tharavol/BuyEmAllContinued/issues/20)).
 - A daily workflow updates the TOC `## Interface` line when the client moves to a new build, and `vX.Y.Z-alpha.N` / `-beta.N` tags publish a GitHub prerelease for testing before a stable release ([#15](https://github.com/Tharavol/BuyEmAllContinued/issues/15)). The CI, release and prerelease workflows share one archive layout check.
+- The daily TOC Interface check tracks both the retail and WoW Forever versions, so its bump doesn't rewrite the Interface line to retail only ([#32](https://github.com/Tharavol/BuyEmAllContinued/issues/32)).
 
 ## [4.1.6] - 2026-11-01
 
