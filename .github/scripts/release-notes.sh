@@ -11,10 +11,10 @@ version=${tag#v}
 base=${version%%-*}
 
 section() {
-  # Lines after the "## [$1]" heading, up to the next "## [" heading, without leading/trailing blank lines.
+  # Lines after the "## [$1]" heading, up to the next "## " heading, without leading/trailing blank lines.
   awk -v want="$1" '
     index($0, "## [" want "]") == 1 { found = 1; next }
-    found && /^## \[/ { exit }
+    found && /^## / { exit }
     found { print }
   ' CHANGELOG.md | sed -e '/./,$!d' | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}'
 }

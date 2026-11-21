@@ -52,7 +52,7 @@ Setup, in-game checks and the release routine are in [CONTRIBUTING.md](CONTRIBUT
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md). Upstream history before this continuation is in [Changelog.txt](Changelog.txt).
+See [CHANGELOG.md](CHANGELOG.md), which also carries the original BuyEmAll's release notes.
 
 ## Credits
 
