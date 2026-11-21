@@ -11,6 +11,7 @@ All notable changes to BuyEmAll Continued are documented in this file. Upstream 
 - The repository now includes tests that run the addon against stand-in WoW APIs, with no game client ([#16](https://github.com/Tharavol/BuyEmAllContinued/issues/16)). They aren't part of the release archive.
 - Every push and pull request now runs luacheck, the tests and a packager dry run ([#14](https://github.com/Tharavol/BuyEmAllContinued/issues/14)).
 - Internal cleanup with no intended change in behavior ([#11](https://github.com/Tharavol/BuyEmAllContinued/issues/11)): addon state is declared in one place, the `BUYEMALL_MAX`, `BUYEMALL_STACK` and `BEAFrame` globals are gone, and dead code and outdated comments are removed.
+- New issues offer a bug report form, asking for the Lua error, game and addon versions, the vendor and item, and other merchant or bag addons, and a feature request form ([#20](https://github.com/Tharavol/BuyEmAllContinued/issues/20)).
 
 ## [4.1.6] - 2026-11-01
 

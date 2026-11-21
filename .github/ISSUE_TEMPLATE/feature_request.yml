@@ -1,0 +1,11 @@
+name: Feature request
+description: A suggestion for something BuyEmAll could do differently or in addition.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Suggestion
+      description: What BuyEmAll should do, and in what situation it would help.
+    validations:
+      required: true
