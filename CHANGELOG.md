@@ -2,7 +2,7 @@
 
 All notable changes to BuyEmAll Continued are documented in this file. The original BuyEmAll's release notes follow under [Upstream history](#upstream-history).
 
-## [Unreleased]
+## [4.1.7] - 2026-11-21
 
 ### Added
 - Loads on World of Warcraft: Forever as well as retail: the TOC now lists Interface 16001 and drops the stale 120000 and 120001 values ([#31](https://github.com/Tharavol/BuyEmAllContinued/issues/31)).
@@ -24,6 +24,12 @@ All notable changes to BuyEmAll Continued are documented in this file. The origi
 - The translation template points at this repository instead of the upstream one, and the README explains how to add a translation ([#19](https://github.com/Tharavol/BuyEmAllContinued/issues/19)).
 - BuyEmAll now hooks the merchant frame's `OnHide` script instead of replacing it, so Blizzard's handler and other addons' hooks stay in place ([#13](https://github.com/Tharavol/BuyEmAllContinued/issues/13)). The shift-click handler is still replaced, since a hook would run after Blizzard's stack split frame has opened; the reasons are recorded in `OnLoad`.
 - The purchase math (bag space, currency room, what can be afforded, the most that can be chosen, bundle rounding, the Stack amount, cost and how a purchase is split into buys) is now in `Calc.lua` as functions that take plain values, with tests that call them directly ([#12](https://github.com/Tharavol/BuyEmAllContinued/issues/12)). No intended change in behavior.
+
+### Known gaps
+These were only checked with stand-in WoW APIs, not in the game, because no suitable vendor item was found. Please report anything that misbehaves.
+- Splitting a large purchase into whole bundles ([#27](https://github.com/Tharavol/BuyEmAllContinued/issues/27)) and the room under a currency's cap when buying it with another currency ([#29](https://github.com/Tharavol/BuyEmAllContinued/issues/29)).
+
+What vendor stock counts on a bundled item is still open and not scheduled ([#26](https://github.com/Tharavol/BuyEmAllContinued/issues/26)).
 
 ## [4.1.6] - 2026-11-01
 
