@@ -53,8 +53,7 @@ read_globals = {
     "IsControlKeyDown", "IsShiftKeyDown", "Screenshot",
 }
 
--- Mostly lines inherited from upstream; rewrapping them would only add churn before
--- the purchase math is extracted.
+-- Mostly lines inherited from upstream; rewrapping them would only add churn.
 files["BuyEmAll.lua"] = {
     max_line_length = false,
 }

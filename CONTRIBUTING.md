@@ -28,7 +28,7 @@ luajit tests/run_tests.lua
 
 A `NOTE` line in the output records behavior that is known but not yet settled, and doesn't fail the run. Each one belongs to an open issue, and becomes a check once that issue is fixed.
 
-To confirm a new check can fail, export the addon to a temporary folder with `git archive HEAD BuyEmAll.lua init.lua localisation`, break the line it covers, and run the cases against that folder.
+To confirm a new check can fail, export the addon to a temporary folder with `git archive HEAD BuyEmAll.lua Calc.lua init.lua localisation`, break the line it covers, and run the cases against that folder.
 
 ## Checking in the game
 

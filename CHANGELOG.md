@@ -9,6 +9,8 @@ All notable changes to BuyEmAll Continued are documented in this file. The origi
 
 ### Fixed
 - **The Stack button no longer lowers the amount** ([#28](https://github.com/Tharavol/BuyEmAllContinued/issues/28)). With a partial stack in your bags, typing an amount past the room left in that stack and clicking Stack could take the amount down. It now always goes up to the next amount that fills a stack.
+- **Large purchases of items priced in other currencies now buy whole bundles only** ([#27](https://github.com/Tharavol/BuyEmAllContinued/issues/27)). A purchase bigger than a stack was split by stack size, so with a stack of 200 and bundles of 3, buying 300 asked for 200 and then 100, neither a whole number of bundles. It now asks for 198 and then 102.
+- **Buying a currency with another currency no longer offers more than the cap has room for** ([#29](https://github.com/Tharavol/BuyEmAllContinued/issues/29)). The most offered ignored the amount already held, so holding 95 of a currency capped at 100 offered 100 rather than 5. Currencies bought with gold already counted it.
 
 ### Internal
 - The repository now includes tests that run the addon against stand-in WoW APIs, with no game client ([#16](https://github.com/Tharavol/BuyEmAllContinued/issues/16)). They aren't part of the release archive.
@@ -21,6 +23,7 @@ All notable changes to BuyEmAll Continued are documented in this file. The origi
 - The upstream release notes from `Changelog.txt` are now part of this file, under Upstream history, and `Changelog.txt` is gone ([#18](https://github.com/Tharavol/BuyEmAllContinued/issues/18)).
 - The translation template points at this repository instead of the upstream one, and the README explains how to add a translation ([#19](https://github.com/Tharavol/BuyEmAllContinued/issues/19)).
 - BuyEmAll now hooks the merchant frame's `OnHide` script instead of replacing it, so Blizzard's handler and other addons' hooks stay in place ([#13](https://github.com/Tharavol/BuyEmAllContinued/issues/13)). The shift-click handler is still replaced, since a hook would run after Blizzard's stack split frame has opened; the reasons are recorded in `OnLoad`.
+- The purchase math (bag space, currency room, what can be afforded, the most that can be chosen, bundle rounding, the Stack amount, cost and how a purchase is split into buys) is now in `Calc.lua` as functions that take plain values, with tests that call them directly ([#12](https://github.com/Tharavol/BuyEmAllContinued/issues/12)). No intended change in behavior.
 
 ## [4.1.6] - 2026-11-01
 

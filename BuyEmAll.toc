@@ -15,5 +15,6 @@ init.lua
 
 localisation/index.xml
 
+Calc.lua
 BuyEmAll.lua
 BuyEmAll.xml

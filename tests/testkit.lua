@@ -195,6 +195,7 @@ local function newClient(opts)
     for file in readFile(ROOT .. "/localisation/index.xml"):gmatch('file="([^"]+)"') do
         load("localisation/" .. file:gsub("\\", "/"))
     end
+    load("Calc.lua")
     load("BuyEmAll.lua")
     env.BuyEmAll:OnLoad()
     env.BuyEmAllFrame:SetScript("OnHide", function() env.BuyEmAll:OnHide() end)

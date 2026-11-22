@@ -7,7 +7,7 @@ zip=$(ls .release/*.zip)
 listing=$(unzip -l "$zip")
 echo "$listing"
 
-for f in BuyEmAll.toc BuyEmAll.lua BuyEmAll.xml init.lua LICENSE localisation/index.xml localisation/enUS.lua; do
+for f in BuyEmAll.toc BuyEmAll.lua BuyEmAll.xml Calc.lua init.lua LICENSE localisation/index.xml localisation/enUS.lua; do
   echo "$listing" | grep -q "BuyEmAll/$f" || { echo "missing BuyEmAll/$f" >&2; exit 1; }
 done
 

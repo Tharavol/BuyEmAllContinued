@@ -6,7 +6,7 @@
 
 package.path = ((arg[0] or ""):match("^(.*)[/\\][^/\\]*$") or ".") .. "/?.lua;" .. package.path
 local T = require("testkit")
-local check, note, newClient, item, altItem = T.check, T.note, T.newClient, T.item, T.altItem
+local check, newClient, item, altItem = T.check, T.newClient, T.item, T.altItem
 
 -- Starts a 50-item run of stack-20 items: 20, 20, 10, one every 0.5 s.
 local function startRun()
@@ -654,19 +654,67 @@ do
     check("#11 Max button is labelled from the locale", c.env.BuyEmAllMaxButton.text == c.env.BuyEmAll.L.MAX, c.env.BuyEmAllMaxButton.text)
 end
 
-print("--- Characterisation, not pass/fail")
+print("--- #12 Calc, called directly with plain values")
+do
+    local Calc = newClient().env.BuyEmAll.Calc
+    local function same(name, got, want) check("#12 " .. name, got == want, tostring(got)) end
+
+    same("FreeSpace: 2 free slots and stacks of 5 and 19, stack 20", Calc.FreeSpace({ { freeSlots = 2, counts = { 5 } }, { freeSlots = 0, counts = { 19 } } }, 20), 56)
+    same("FreeSpace: no bags", Calc.FreeSpace({}, 20), 0)
+    same("CurrencyFit: 30 held of a cap of 100", Calc.CurrencyFit(100, 30), 70)
+    same("CurrencyFit: no cap", Calc.CurrencyFit(0, 30), 10000000)
+    same("CurrencyFit: a negative cap is none too", Calc.CurrencyFit(-1, 30), 10000000)
+    same("GoldAfford: 1g at 25c per bundle of 5 rounds the unit price up to 5c", Calc.GoldAfford(10000, 25, 5, 999), 2000)
+    same("GoldAfford: 10c at 7c per bundle of 2 buys 2", Calc.GoldAfford(10, 7, 2, 999), 2)
+    same("GoldAfford: free items are limited by fit", Calc.GoldAfford(0, 0, 1, 42), 42)
+    same("AltAfford: the scarcer of two costs, in whole bundles", Calc.AltAfford({ { owned = 10, price = 3 }, { owned = 5, price = 1 } }, 4, 999), 12)
+    same("AltAfford: no costs are limited by fit", Calc.AltAfford({}, 4, 42), 42)
+    same("GoldMax: stock counts items", Calc.GoldMax(200, 100, 7), 7)
+    same("GoldMax: -1 is unlimited stock", Calc.GoldMax(200, 100, -1), 100)
+    same("AltMax: stock counts bundles (#26)", Calc.AltMax(200, 100, 7, 3), 21)
+    same("AltMax: rounds down to a whole bundle", Calc.AltMax(50, 100, -1, 3), 48)
+    same("RoundToBundle: 4 in bundles of 3", Calc.RoundToBundle(4, 3), 6)
+    same("RoundToBundle: already whole", Calc.RoundToBundle(6, 3), 6)
+    same("RoundToBundle: bundle of 1", Calc.RoundToBundle(4, 1), 4)
+    same("StackClick: from 1 with no partial stack", Calc.StackClick(1, 0, 20), 20)
+    same("StackClick: tops up a partial stack with room for 5 first", Calc.StackClick(1, 5, 20), 5)
+    same("StackClick: from a full stack goes to the next", Calc.StackClick(20, 0, 20), 40)
+    same("NeedsConfirmation: more than a stack and a bundle", Calc.NeedsConfirmation(21, 20, 1), true)
+    same("NeedsConfirmation: one stack", Calc.NeedsConfirmation(20, 20, 1), false)
+    same("GoldCost: 3 of a 10c bundle of 4 rounds up", Calc.GoldCost(3, 10, 4), 8)
+    local g, s, cp = Calc.Coins(123456)
+    same("Coins: 123456 copper is 12g 34s 56c", g .. "/" .. s .. "/" .. cp, "12/34/56")
+    local per, n, left = Calc.PurchaseRuns(50, 20)
+    same("PurchaseRuns: 50 in stacks of 20", per .. "x" .. n .. "+" .. left, "20x2+10")
+    per, n, left = Calc.PurchaseRuns(7, 20)
+    same("PurchaseRuns: less than a stack", per .. "x" .. n .. "+" .. left, "7x1+0")
+    per, n, left = Calc.PurchaseRuns(300, 200, 3)
+    same("PurchaseRuns: 300 in bundles of 3, stack 200, buys whole bundles (#27)", per .. "x" .. n .. "+" .. left, "198x1+102")
+    per, n, left = Calc.PurchaseRuns(60, 20, 5)
+    same("PurchaseRuns: a bundle that divides the stack changes nothing", per .. "x" .. n .. "+" .. left, "20x3+0")
+    per, n, left = Calc.PurchaseRuns(40, 1, 20)
+    same("PurchaseRuns: a bundle bigger than the stack buys a bundle at a time", per .. "x" .. n .. "+" .. left, "20x2+0")
+end
+
+print("--- #27 and #29")
 do
     local c = newClient({ items = { altItem(1, 1, 3) }, stackSize = 200 })
     c:click(1)
     c.env.BuyEmAll:DoPurchase(300)
     c:tick(4)
-    note("DoPurchase of 300, bundle 3, stack 200 sends", c:quantities())
+    check("#27 300 in bundles of 3, stack 200, is bought as 198 then 102", c:quantities() == "198,102", c:quantities())
+
+    c = newClient({ items = { item(1, { stackCount = 3 }) }, stackSize = 200 })
+    c:click(1)
+    c.env.BuyEmAll:DoPurchase(300)
+    c:tick(4)
+    check("#27 gold items still split by stack", c:quantities() == "200,100", c:quantities())
 
     local cost = altItem(1, 1).costs[1]
     local capped = altItem(1, 1)
     capped.link = "|cff|Hcurrency:55:0|h[C]|h|r"
-    local _, _, b = open({ items = { capped }, currencies ={ [capped.link] = { quantity = 95, maxQuantity = 100 }, [cost.link] = { quantity = 1000, maxQuantity = 0 } } })
-    note("Currency for a currency, holding 95 of a cap of 100: the most is", b.max)
+    local _, _, b = open({ items = { capped }, currencies = { [capped.link] = { quantity = 95, maxQuantity = 100 }, [cost.link] = { quantity = 1000, maxQuantity = 0 } } })
+    check("#29 currency for a currency, holding 95 of a cap of 100: the most is the room left, 5", b.fit == 5 and b.max == 5, b.fit .. "/" .. b.max)
 end
 
 T.finish()

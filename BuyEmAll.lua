@@ -1,6 +1,7 @@
 -- BuyEmAll.L is set by the client's locale file, if there is one; missing keys fall back to English (enUS.lua).
 BuyEmAll.L = setmetatable(BuyEmAll.L or {}, { __index = BuyEmAll.DefaultL });
 local L = BuyEmAll.L;
+local Calc = BuyEmAll.Calc;
 
 -- Addon state. Unless noted, these are set when an item is shift-clicked.
 
@@ -24,7 +25,6 @@ BuyEmAll.AltCurrencyMode = nil;   -- Whether the item is priced in other currenc
 BuyEmAll.NumAltCurrency = nil;    -- How many of those it's priced in.
 BuyEmAll.AltCurrTex = nil;        -- The icon of each.
 BuyEmAll.AltCurrPrice = nil;      -- The cost of one bundle in each.
-BuyEmAll.AltCurrAfford = nil;     -- How many can be paid for with each.
 BuyEmAll.ConfirmNoItemLink = 0;   -- The list position of the entry without a link awaiting confirmation.
 BuyEmAll.OrigMerchantItemButton_OnModifiedClick = nil; -- Blizzard's click handler, set in OnLoad.
 
@@ -147,7 +147,6 @@ function BuyEmAll:HasBagEquippedInSlot(slotID)
 end
 
 function BuyEmAll:GetFreeBagSpace(itemID)
-    local canFit = 0;
     -- Global item functions were removed in 12.1.5; use the C_Item namespace.
     local itemType = C_Item.GetItemFamily(itemID) or 0;
     local stackSize = C_Item.GetItemMaxStackSizeByID(itemID);
@@ -157,6 +156,7 @@ function BuyEmAll:GetFreeBagSpace(itemID)
 
     local isReagent = select(17, C_Item.GetItemInfo(itemID));
 
+    local bags = {};
     for currentBag = Enum.BagIndex.Backpack, Enum.BagIndex.ReagentBag do
         local freeSpace, bagType = C_Container.GetContainerNumFreeSlots(currentBag);
         local canHold;
@@ -166,20 +166,18 @@ function BuyEmAll:GetFreeBagSpace(itemID)
             canHold = bagType == 0 or (BuyEmAll:HasBagEquippedInSlot(currentBag) and (bagType == itemType or bit.band(itemType, bagType) == bagType));
         end
         if (canHold) then
-            canFit = canFit + (freeSpace * stackSize);
-
-            local totalBagSlots = C_Container.GetContainerNumSlots(currentBag);
-            for currentSlot = 1, totalBagSlots do
+            local counts = {};
+            for currentSlot = 1, C_Container.GetContainerNumSlots(currentBag) do
                 local itemInfo = C_Container.GetContainerItemInfo(currentBag, currentSlot);
                 if (itemInfo ~= nil and itemInfo.itemID == itemID) then
-                    local itemCount = itemInfo.stackCount or 0;
-                    canFit = canFit + (stackSize - itemCount);
+                    counts[#counts + 1] = itemInfo.stackCount or 0;
                 end
             end
+            bags[#bags + 1] = { freeSlots = freeSpace, counts = counts };
         end
     end
 
-    return canFit, stackSize;
+    return Calc.FreeSpace(bags, stackSize), stackSize;
 end
 
 -- Hooks left-clicks on merchant item buttons.
@@ -225,8 +223,8 @@ function BuyEmAll:MerchantItemButton_OnModifiedClick(frame, button)
 
         -- Buying a currency with a currency.
         if ((strmatch(self.itemLink, "currency")) and (self.price <= 0 or self.price == nil)) then
-            local totalMax = C_CurrencyInfo.GetCurrencyInfoFromLink(self.itemLink).maxQuantity;
-            self.fit = (totalMax <= 0 and 10000000 or totalMax);
+            local currency = C_CurrencyInfo.GetCurrencyInfoFromLink(self.itemLink);
+            self.fit = Calc.CurrencyFit(currency.maxQuantity, currency.quantity);
             self.stack = self.preset;
             self:AltCurrencyHandling(self.itemIndex, frame);
             return;
@@ -241,8 +239,8 @@ function BuyEmAll:MerchantItemButton_OnModifiedClick(frame, button)
             self.partialFit = self.fit % stack;
         elseif (strmatch(self.itemLink, "currency")) then -- Same for if the purchase is a currency.
             self.stack = self.preset;
-            local totalMax = C_CurrencyInfo.GetCurrencyInfoFromLink(self.itemLink).maxQuantity;
-            self.fit = (totalMax == 0 and 10000000 or totalMax - C_CurrencyInfo.GetCurrencyInfoFromLink(self.itemLink).quantity)
+            local currency = C_CurrencyInfo.GetCurrencyInfoFromLink(self.itemLink);
+            self.fit = Calc.CurrencyFit(currency.maxQuantity, currency.quantity);
             self.partialFit = 0; -- Currencies don't have stacks, so there can't be a partial stack.
         end
 
@@ -258,21 +256,14 @@ function BuyEmAll:MerchantItemButton_OnModifiedClick(frame, button)
 
         -- Free items have no cost to limit them. This has to come after the alternate currency check.
 
-        if (self.price <= 0 or self.price == nil) then
-            self.afford = self.fit;
-        else
-            self.afford = floor(GetMoney() / ceil(self.price / self.preset));
-        end
+        self.afford = Calc.GoldAfford(GetMoney(), self.price, self.preset, self.fit);
 
         local uniqueAllowance = (self.itemID ~= nil) and self:UniqueAllowance(self.itemLink);
         if (uniqueAllowance) then
             self.afford = min(self.afford, uniqueAllowance);
         end
 
-        self.max = min(self.fit, self.afford);
-        if (numAvailable > -1) then
-            self.max = min(self.max, numAvailable);
-        end
+        self.max = Calc.GoldMax(self.fit, self.afford, numAvailable);
         if (self.max == 0) then
             return;
         elseif (self.max == 1) then
@@ -300,46 +291,29 @@ function BuyEmAll:AltCurrencyHandling(itemIndex, frame)
 
     self.AltCurrTex = {};
     self.AltCurrPrice = {};
-    self.AltCurrAfford = {};
 
-    if (self.NumAltCurrency <= 0) then
-        self.afford = self.fit;
-    else
-        for i = 1, self.NumAltCurrency do
-            local altCurrTex, altCurrPrice, altCurrLink = GetMerchantItemCostItem(itemIndex, i);
-            self.AltCurrTex[i] = altCurrTex;
-            self.AltCurrPrice[i] = altCurrPrice;
+    local costs = {};
+    for i = 1, self.NumAltCurrency do
+        local altCurrTex, altCurrPrice, altCurrLink = GetMerchantItemCostItem(itemIndex, i);
+        self.AltCurrTex[i] = altCurrTex;
+        self.AltCurrPrice[i] = altCurrPrice;
 
-            if (strmatch(altCurrLink, "currency")) then -- Item/Currency link check
-                self.AltCurrAfford[i] = floor(C_CurrencyInfo.GetCurrencyInfoFromLink(altCurrLink).quantity / self.AltCurrPrice[i]) * self.preset; -- Calculate how many can be purchased.
-            else
-                self.AltCurrAfford[i] = floor((C_Item.GetItemCount(tonumber(strmatch(altCurrLink, "item:(%d+):")), true)) / self.AltCurrPrice[i]) * self.preset; -- Calculate how many can be purchased.
-            end
+        local owned;
+        if (strmatch(altCurrLink, "currency")) then
+            owned = C_CurrencyInfo.GetCurrencyInfoFromLink(altCurrLink).quantity;
+        else
+            owned = C_Item.GetItemCount(tonumber(strmatch(altCurrLink, "item:(%d+):")), true);
         end
-    self.afford = self.AltCurrAfford[1];
+        costs[i] = { owned = owned, price = altCurrPrice };
     end
-
-    if (self.NumAltCurrency > 1) then
-        for i = 2, self.NumAltCurrency do
-            self.afford = min(self.afford, self.AltCurrAfford[i] or 999999);
-        end
-    end
+    self.afford = Calc.AltAfford(costs, self.preset, self.fit);
 
     local uniqueAllowance = (self.itemID ~= nil) and self:UniqueAllowance(self.itemLink);
     if (uniqueAllowance) then
         self.afford = min(self.afford, uniqueAllowance);
     end
 
-    self.max = min(self.fit, self.afford);
-
-    if (self.available > -1) then
-        self.max = min(self.max, self.available * self.preset);
-    end
-
-    -- Only whole bundles can be bought, and bag space need not be a whole number of them.
-    if (self.preset > 1) then
-        self.max = self.max - (self.max % self.preset);
-    end
+    self.max = Calc.AltMax(self.fit, self.afford, self.available, self.preset);
 
     if (self.max == 0) then
         return;
@@ -387,12 +361,8 @@ function BuyEmAll:VerifyPurchase(amount)
     end
 
     if (amount > 0) then
-        if (amount > self.stack) and (amount > self.defaultStack) then
-            if (BEAConfirmToggle == true) then
-                self:DoConfirmation(amount);
-            else
-                self:DoPurchase(amount);
-            end
+        if (BEAConfirmToggle == true) and Calc.NeedsConfirmation(amount, self.stack, self.defaultStack) then
+            self:DoConfirmation(amount);
         else
             self:DoPurchase(amount);
         end
@@ -461,26 +431,15 @@ end
 -- Makes the actual purchase(s)
 function BuyEmAll:DoPurchase(amount)
     BuyEmAllFrame:Hide();
-    local numLoops, purchAmount, leftover;
 
     if (strmatch(self.itemLink, "currency")) then -- Currencies skip the loop and are bought all at once.
         BuyMerchantItem(self.itemIndex, amount);
         return;
     end
 
-    if (amount <= self.stack) then
-        purchAmount = amount;
-        numLoops = 1;
-        leftover = 0;
-    else
-        purchAmount = self.stack;
-        numLoops = floor(amount / self.stack);
-        leftover = amount % self.stack;
-    end
-
-    framePurchAmount = purchAmount;
-    frameNumLoops = numLoops;
-    frameLeftover = leftover;
+    -- Alternate-currency items are bought in whole bundles only, so each buy is too.
+    local bundle = (self.AltCurrencyMode == true) and self.preset or nil;
+    framePurchAmount, frameNumLoops, frameLeftover = Calc.PurchaseRuns(amount, self.stack, bundle);
     frameItemIndex = self.itemIndex;
     frameItemLinkID = LinkID(self.itemLink);
     frameTotal = amount;
@@ -489,17 +448,10 @@ function BuyEmAll:DoPurchase(amount)
     PurchaseLoopFrame:SetScript("OnUpdate", BuyEmAll.onUpdate);
 end
 
--- Items bought with alternate currencies come in bundles of self.preset (the vendor's stack count), and,
--- like Blizzard's own stack split frame, only whole bundles are bought. Rounds up to a whole bundle;
--- AltCurrencyHandling keeps self.max a whole number of bundles, so this can't go past it.
+-- Rounds up to a whole bundle of the vendor's stack count (see Calc.RoundToBundle).
 
 function BuyEmAll:AltCurrRounding(purchase)
-    local preset = self.preset or 1;
-    if (preset <= 1) or (purchase % preset == 0) then
-        return purchase;
-    end
-
-    return purchase + (preset - (purchase % preset));
+    return Calc.RoundToBundle(purchase, self.preset);
 end
 
 -- Updates the buttons and the cost for the amount currently chosen.
@@ -528,10 +480,7 @@ function BuyEmAll:UpdateDisplay()
     local purchase = self.split;
 
     if (self.AltCurrencyMode == false) then
-        local cost = ceil(purchase * (self.price / self.defaultStack));
-        local gold = floor(cost / 10000);
-        local silver = floor((cost / 100) % 100);
-        local copper = floor(cost % 100);
+        local gold, silver, copper = Calc.Coins(Calc.GoldCost(purchase, self.price, self.defaultStack));
 
         BuyEmAllCurrencyAmt1:SetText(gold);
         BuyEmAllCurrencyAmt2:SetText(silver);
@@ -566,8 +515,7 @@ end
 -- Calculates the amount that the Stack button will enter.
 
 function BuyEmAll:SetStackClick()
-    local increase = (self.partialFit - self.split) % self.stack; -- The room to the next amount that fills a stack.
-    self.stackClick = self.split + (increase == 0 and self.stack or increase);
+    self.stackClick = Calc.StackClick(self.split, self.partialFit, self.stack);
 end
 
 function BuyEmAll:DeStackClick()
